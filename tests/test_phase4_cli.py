@@ -36,6 +36,26 @@ class Phase4CliTests(unittest.TestCase):
         self.assertIn("codex", output.getvalue())
         self.assertIn("Codex", output.getvalue())
 
+    def test_agents_list_uses_saved_hub_path_when_flag_omitted(self):
+        from tool_hub import cli
+
+        with tempfile.TemporaryDirectory() as tmp:
+            hub_path = Path(tmp) / "hub"
+            hub_path.mkdir(parents=True, exist_ok=True)
+            (hub_path / "tool-hub.json").write_text(
+                json.dumps({"hub_path": str(hub_path), "agents": [{"id": "codex", "name": "Codex", "skills_dir": []}]}),
+                encoding="utf-8",
+            )
+
+            output = io.StringIO()
+            with patch("tool_hub.cli.get_saved_hub_path", return_value=str(hub_path)):
+                with patch("tool_hub.config_store.get_saved_hub_path", return_value=str(hub_path)):
+                    with redirect_stdout(output):
+                        cli.main(["agents", "list"])
+
+        self.assertIn("codex", output.getvalue())
+        self.assertIn("Codex", output.getvalue())
+
     def test_mcp_test_no_exec_disables_fetch_tools(self):
         from tool_hub import cli
 

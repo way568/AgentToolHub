@@ -1,7 +1,10 @@
 import json
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 class Phase2ServiceTests(unittest.TestCase):
@@ -19,14 +22,15 @@ class Phase2ServiceTests(unittest.TestCase):
             }
             service = AgentService()
 
-            result = service.add_agent(
-                config,
-                {
-                    "name": "Cursor",
-                    "skills_dir": ["/tmp/cursor-skills"],
-                    "mcp_config_path": "/tmp/cursor-mcp.json",
-                },
-            )
+            with patch("tool_hub.config_store.HUB_PATH_POINTER", Path(tmp) / ".hub-path"):
+                result = service.add_agent(
+                    config,
+                    {
+                        "name": "Cursor",
+                        "skills_dir": ["/tmp/cursor-skills"],
+                        "mcp_config_path": "/tmp/cursor-mcp.json",
+                    },
+                )
 
             self.assertTrue(result["ok"])
             self.assertEqual(result["agent"]["id"], "cursor")
@@ -114,6 +118,93 @@ class Phase2ServiceTests(unittest.TestCase):
 
             self.assertEqual(len(result["mcps"]), 1)
             self.assertTrue(result["mcps"][0]["agent_status"]["cursor"])
+
+    def test_save_config_serializes_concurrent_writes(self):
+        from tool_hub.config_store import load_config, save_config
+        from tool_hub import config_store
+
+        with tempfile.TemporaryDirectory() as tmp:
+            hub_path = Path(tmp) / "hub"
+            first = {"hub_path": str(hub_path), "agents": [{"id": "a", "name": "A", "skills_dir": []}]}
+            second = {"hub_path": str(hub_path), "agents": [{"id": "b", "name": "B", "skills_dir": []}]}
+            active_writers = 0
+            max_active_writers = 0
+            errors = []
+            state_lock = threading.Lock()
+            original_write = config_store._write_json_atomically
+
+            def wrapped_write(config_path, config):
+                nonlocal active_writers, max_active_writers
+                with state_lock:
+                    active_writers += 1
+                    max_active_writers = max(max_active_writers, active_writers)
+                try:
+                    time.sleep(0.05)
+                    return original_write(config_path, config)
+                finally:
+                    with state_lock:
+                        active_writers -= 1
+
+            def run_save(config):
+                try:
+                    save_config(config)
+                except Exception as error:  # pragma: no cover
+                    errors.append(error)
+
+            with patch("tool_hub.config_store.HUB_PATH_POINTER", Path(tmp) / ".hub-path"):
+                with patch("tool_hub.config_store._write_json_atomically", side_effect=wrapped_write):
+                    threads = [
+                        threading.Thread(target=run_save, args=(first,)),
+                        threading.Thread(target=run_save, args=(second,)),
+                    ]
+                    for thread in threads:
+                        thread.start()
+                    for thread in threads:
+                        thread.join()
+
+            self.assertEqual(errors, [])
+            self.assertEqual(max_active_writers, 1)
+            stored = load_config(str(hub_path))
+            self.assertIn(stored["agents"][0]["id"], {"a", "b"})
+
+    def test_save_hub_path_pointer_does_not_expose_partial_content(self):
+        from tool_hub.config_store import get_saved_hub_path, save_hub_path_pointer
+
+        with tempfile.TemporaryDirectory() as tmp:
+            pointer_path = Path(tmp) / ".hub-path"
+            allowed = {"/tmp/hub-a", "/tmp/hub-b"}
+            observed_invalid = []
+            stop = threading.Event()
+
+            def writer(value):
+                for _ in range(50):
+                    save_hub_path_pointer(value)
+                    time.sleep(0.002)
+
+            def reader():
+                while not stop.is_set():
+                    current = get_saved_hub_path()
+                    if current is not None and current not in allowed:
+                        observed_invalid.append(current)
+
+            with patch("tool_hub.config_store.HUB_PATH_POINTER", pointer_path):
+                save_hub_path_pointer("/tmp/hub-a")
+                reader_thread = threading.Thread(target=reader)
+                writers = [
+                    threading.Thread(target=writer, args=("/tmp/hub-a",)),
+                    threading.Thread(target=writer, args=("/tmp/hub-b",)),
+                ]
+                reader_thread.start()
+                for thread in writers:
+                    thread.start()
+                for thread in writers:
+                    thread.join()
+                stop.set()
+                reader_thread.join()
+                final_value = get_saved_hub_path()
+
+            self.assertEqual(observed_invalid, [])
+            self.assertIn(final_value, allowed)
 
 
 if __name__ == "__main__":

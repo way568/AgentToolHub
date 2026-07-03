@@ -2,7 +2,7 @@ import argparse
 import json
 import sys
 
-from tool_hub.config_store import get_default_hub_path, load_config
+from tool_hub.config_store import get_default_hub_path, get_saved_hub_path, load_config
 from tool_hub.errors import ToolHubError
 from tool_hub.services.agents import AgentService
 from tool_hub.services.mcp import McpService
@@ -10,8 +10,13 @@ from tool_hub.services.skills import SkillService
 from tool_hub.server import start_web_server
 
 
+def _resolve_hub_path(hub_path=None):
+    return hub_path or get_saved_hub_path() or get_default_hub_path()
+
+
 def _load_config_or_empty(hub_path=None):
-    return load_config(hub_path or get_default_hub_path()) or {"hub_path": hub_path or get_default_hub_path(), "agents": []}
+    resolved_hub_path = _resolve_hub_path(hub_path)
+    return load_config(hub_path) or {"hub_path": resolved_hub_path, "agents": []}
 
 
 def build_parser():

@@ -28,6 +28,16 @@ def build_multipart(filename, payload, boundary="----toolhub-boundary"):
 
 
 class Phase7ServiceTests(unittest.TestCase):
+    def setUp(self):
+        self._pointer_tmp = tempfile.TemporaryDirectory()
+        pointer_path = Path(self._pointer_tmp.name) / ".hub-path"
+        self._hub_pointer_patcher = patch("tool_hub.config_store.HUB_PATH_POINTER", pointer_path)
+        self._hub_pointer_patcher.start()
+
+    def tearDown(self):
+        self._hub_pointer_patcher.stop()
+        self._pointer_tmp.cleanup()
+
     def test_config_service_initializes_config_and_logs(self):
         from tool_hub.audit import read_logs
         from tool_hub.config_store import load_config
