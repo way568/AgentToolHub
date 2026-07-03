@@ -405,6 +405,57 @@ class Phase7ServiceTests(unittest.TestCase):
             self.assertTrue(real_skill.is_dir())
             self.assertFalse((hub_path / "beta").exists())
 
+    def test_skill_service_sync_marks_missing_skills_dir_as_broken(self):
+        from tool_hub.services.skills import SkillService
+
+        with tempfile.TemporaryDirectory() as tmp:
+            hub_path = Path(tmp) / "hub"
+            skill_dir = hub_path / "alpha"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text("---\nname: alpha\ndescription: ok\n---\n", encoding="utf-8")
+            config = {
+                "hub_path": str(hub_path),
+                "skills": {
+                    "alpha": {
+                        "path": str(skill_dir),
+                        "agents": ["mcp-only"],
+                    }
+                },
+                "agents": [{"id": "mcp-only", "name": "McpOnly", "skills_dir": []}],
+            }
+
+            result = SkillService().sync(config)
+
+            self.assertEqual(result["report"]["created"], [])
+            self.assertEqual(len(result["report"]["broken"]), 1)
+            self.assertEqual(result["report"]["broken"][0]["agent"], "mcp-only")
+            self.assertEqual(result["report"]["broken"][0]["reason"], "Agent 未配置 skills_dir")
+
+    def test_skill_service_scan_sync_skips_missing_skills_dir_agent(self):
+        from tool_hub.services.skills import SkillService
+
+        with tempfile.TemporaryDirectory() as tmp:
+            hub_path = Path(tmp) / "hub"
+            skill_dir = hub_path / "alpha"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text("---\nname: alpha\ndescription: ok\n---\n", encoding="utf-8")
+            config = {
+                "hub_path": str(hub_path),
+                "skills": {
+                    "alpha": {
+                        "path": str(skill_dir),
+                        "agents": ["mcp-only"],
+                    }
+                },
+                "agents": [{"id": "mcp-only", "name": "McpOnly", "skills_dir": []}],
+            }
+
+            result = SkillService().scan_sync(config)
+
+            self.assertEqual(result["sync_created"], 0)
+            self.assertEqual(result["sync_broken"], 1)
+            self.assertEqual(result["new_discovered"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

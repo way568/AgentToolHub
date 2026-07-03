@@ -457,6 +457,13 @@ class SkillService:
                 agent_dirs = normalize_skills_dirs(agent)
                 should_exist = agent["id"] in enabled_agents
                 if should_exist:
+                    if not agent_dirs:
+                        report["broken"].append({
+                            "skill": skill_id,
+                            "agent": agent["id"],
+                            "reason": "Agent 未配置 skills_dir",
+                        })
+                        continue
                     exists_anywhere = any((Path(directory) / skill_id).exists() for directory in agent_dirs)
                     if not exists_anywhere:
                         link_path = Path(agent_dirs[0]) / skill_id
@@ -499,6 +506,9 @@ class SkillService:
                 agent_dirs = normalize_skills_dirs(agent)
                 agent_enabled = agent["id"] in skill_info.get("agents", [])
                 if agent_enabled:
+                    if not agent_dirs:
+                        sync_broken += 1
+                        continue
                     exists_anywhere = any((Path(directory) / skill_id).exists() for directory in agent_dirs)
                     if not exists_anywhere:
                         link_path = Path(agent_dirs[0]) / skill_id
