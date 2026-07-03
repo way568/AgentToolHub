@@ -19,6 +19,19 @@ class DocsClosureTests(unittest.TestCase):
         self.assertIn("tool_hub/http_app.py", readme)
         self.assertIn("tool_hub/services/config.py", readme)
         self.assertIn("tool_hub/services/upload.py", readme)
+        self.assertIn("QUICKSTART.md", readme)
+
+    def test_quickstart_covers_release_basics(self):
+        quickstart = Path("QUICKSTART.md").read_text(encoding="utf-8")
+
+        self.assertIn("怎么解压即用", quickstart)
+        self.assertIn("怎么初始化", quickstart)
+        self.assertIn("常见命令", quickstart)
+        self.assertIn("常见错误", quickstart)
+        self.assertIn("python3 tool_hub_server.py", quickstart)
+        self.assertIn("python3 -m tool_hub.cli doctor", quickstart)
+        self.assertIn("skills gather", quickstart)
+        self.assertIn("127.0.0.1", quickstart)
 
     def test_handoff_reflects_current_package_and_remaining_work(self):
         handoff = Path("HANDOFF.md").read_text(encoding="utf-8")

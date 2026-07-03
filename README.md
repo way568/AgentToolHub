@@ -7,6 +7,8 @@
 - 核心业务在 `service` 层，`tool_hub/http_app.py` 主要负责 HTTP 壳。
 - 默认按“个人可信工具”设计，不做多用户认证。
 
+最小使用说明见 `QUICKSTART.md`。
+
 ## 当前结构
 
 ```text
