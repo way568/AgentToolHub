@@ -1,0 +1,14 @@
+{
+  "id": "qoderwork",
+  "name": "QoderWork",
+  "skills_dir_candidates": [
+    "~/.qoderwork/skills"
+  ],
+  "mcp_config_candidates": [
+    "~/.qoderwork/mcp.json",
+    "~/Library/Application Support/QoderWork/mcp.json",
+    "~/.config/QoderWork/mcp.json",
+    "~/AppData/Roaming/QoderWork/mcp.json"
+  ],
+  "mcp_config_key": "mcpServers"
+}

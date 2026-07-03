@@ -1,0 +1,12 @@
+{
+  "id": "codex",
+  "name": "Codex",
+  "skills_dir_candidates": [
+    "~/.codex/skills"
+  ],
+  "mcp_config_candidates": [
+    "~/.codex/config.toml"
+  ],
+  "mcp_config_key": "mcp_servers",
+  "mcp_config_format": "toml"
+}

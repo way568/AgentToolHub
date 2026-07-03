@@ -2,139 +2,178 @@
 
 生成时间：2026-07-03
 
-## 背景
+## 结论
 
-本轮工作围绕 `/Users/wayne/AI产物/skills/tool-hub`，目标是把当前 Codex Agent 接入 Tool Hub，并处理 Codex MCP 配置格式特殊的问题。
+`Phase 0~7` 已完成。
 
-Tool Hub 服务地址：`http://localhost:8765`
+现在的状态是：
 
-Tool Hub 全局配置文件：`/Users/wayne/AI产物/skills/tool-hub.json`
+- `ConfigService` 和 `UploadSkillService` 已抽出。
+- `tool_hub/http_app.py` 又薄了一刀，`config` / `upload skill` 已从 HTTP 层下沉。
+- CLI 已补 `skills gather` / `skills toggle`。
+- HTTP / CLI 端到端测试已补齐主流程。
+- 发布收口已完成：`pyproject.toml`、`tool-hub`、`tool-hub-web` 已到位。
+- `README.md` 和 `HANDOFF.md` 已按当前真实结构更新。
+- 当前 review 口径：先按“解压即用”看，不把安装流程当阻塞项。
 
-项目目录：`/Users/wayne/AI产物/skills/tool-hub`
+## 当前结构
 
-## 已完成
+```text
+tool-hub/
+  pyproject.toml
+  tool_hub/
+    cli.py
+    server.py
+    http_app.py
+    index.html
+    config_store.py
+    presets.py
+    safety.py
+    audit.py
+    backends/
+      json_cfg.py
+      toml_cfg.py
+      registry.py
+    mcp/
+      adapters.py
+      agent_config.py
+      runtime.py
+      store.py
+    services/
+      agents.py
+      audit.py
+      config.py
+      mcp.py
+      skills.py
+      upload.py
+    skills/
+      backends.py
+  agent-presets/
+  mcp-adapters/
+  tests/
+  tool_hub_server.py
+```
 
-- 已将当前 Agent 识别为 `codex` / `Codex`。
-- 已通过 Tool Hub API upsert Codex Agent。
-- Codex Agent 配置如下：
-  - `skills_dir`: `/Users/wayne/.codex/skills`
-  - `mcp_config_path`: `/Users/wayne/.codex/config.toml`
-  - `mcp_config_key`: `mcp_servers`
-- 已确认 Codex 的 MCP 配置是 TOML 格式，不是常见 JSON `mcpServers` 格式。
-- 已新增 Codex MCP adapter：`mcp-adapters/codex.json`
-- 已修改 `tool_hub_server.py`：
-  - 增加 Codex Agent preset。
-  - 增加 TOML MCP 读取支持。
-  - 增加 TOML MCP 写入和删除支持。
-  - 支持 `[mcp_servers.name]` 与 `[mcp_servers.name.env]` 结构。
-- 已验证：
-  - `python3 -m py_compile tool_hub_server.py` 通过。
-  - `mcp-adapters/codex.json` JSON 格式有效。
-  - 使用临时 TOML 文件测试 MCP 新增、读取、删除成功，没有改真实 `~/.codex/config.toml`。
-  - `GET /api/mcp` 能扫描出 Codex 的 `node_repl`，且 `agent_status.codex = true`。
-- 已在项目目录初始化 Git 仓库并创建初始提交：
-  - `88465bf Initial Tool Hub import`
-- `.gitignore` 已忽略本地状态文件：
-  - `.DS_Store`
-  - `.hub-path`
-  - `.gitignore 15.05.32`
-  - Python 缓存和日志
+关键点：
 
-## 当前状态
+- `tool_hub/http_app.py`：HTTP 壳，主做路由和编解码。
+- `tool_hub/services/config.py`：初始化配置、返回配置、Agent 列表。
+- `tool_hub/services/upload.py`：处理 zip 上传。
+- `tool_hub/services/skills.py`：scan/gather/toggle/sync/delete。
+- `tool_hub/services/mcp.py`：list/add/edit/delete/gather/toggle/test。
+- `tool_hub/services/audit.py`：log list / rollback / undo。
 
-- Git 仓库位于：`/Users/wayne/AI产物/skills/tool-hub/.git`
-- 当前分支：`main`
-- 当前提交：`88465bf Initial Tool Hub import`
-- `git status --short --ignored` 只显示 ignored 本地文件，没有未提交源码变更。
-- Tool Hub Python 服务最后确认运行在 `localhost:8765`，监听进程为本地 `python3 tool_hub_server.py`。如果下一会话发现端口未监听，直接在项目目录运行：
+## 命令
+
+主路径：
 
 ```bash
 python3 tool_hub_server.py
+python3 -m tool_hub.cli web --host 127.0.0.1 --port 8765 --no-browser
 ```
 
-或后台运行：
+常用模块命令：
 
 ```bash
-cd /Users/wayne/AI产物/skills/tool-hub
-nohup python3 tool_hub_server.py >/tmp/tool-hub.log 2>&1 < /dev/null &
+python3 -m tool_hub.cli doctor
+python3 -m tool_hub.cli agents list
+python3 -m tool_hub.cli mcp test --name playwright --no-exec
+python3 -m tool_hub.cli skills gather --name demo --from /abs/path/demo --agent-id codex
+python3 -m tool_hub.cli skills toggle --skill-id demo --agent-id cursor
 ```
 
-## 重要文件
+`skills gather` 约束：
 
-- `/Users/wayne/AI产物/skills/tool-hub/tool_hub_server.py`
-- `/Users/wayne/AI产物/skills/tool-hub/mcp-adapters/codex.json`
-- `/Users/wayne/AI产物/skills/tool-hub/mcp-adapters/claude-code.json`
-- `/Users/wayne/AI产物/skills/tool-hub/mcp-adapters/aone-copilot.json`
-- `/Users/wayne/AI产物/skills/tool-hub/index.html`
-- `/Users/wayne/AI产物/skills/tool-hub.json`
+- `agent_id` 必填，且必须命中已配置 Agent。
+- `from` 路径必须属于该 Agent 的 `skills_dir`。
 
-## 设计判断
-
-用户询问过当前架构是否一定需要 Python 服务，以及能否改成 CLI。
-
-建议方向：CLI 为主，HTML 服务为可选壳。
-
-原因：
-
-- 核心能力是本地配置读写、Agent 检测、MCP adapter 转换、MCP 启停和测试，这些不需要长期 HTTP 服务。
-- HTML 前端仍需要本地服务，因为浏览器不能直接安全读写用户目录或执行本地命令。
-- 推荐后续拆分为：
-  - `core/config.py`
-  - `core/agents.py`
-  - `core/skills.py`
-  - `core/mcp.py`
-  - `core/adapters.py`
-  - `core/formats.py`
-  - `cli.py`
-  - `server.py`
-
-推荐渐进路线：
-
-1. 先把 `tool_hub_server.py` 的核心逻辑拆到 `core/`，不改变 Web 行为。
-2. 增加 CLI 命令入口。
-3. 让 HTTP 服务只作为 `tool-hub web` 可选模式。
-4. 后续 Agent 自动接入优先调用 CLI，而不是 HTTP API。
-
-## 建议命令
-
-检查服务：
+可选安装入口：
 
 ```bash
-lsof -nP -iTCP:8765 -sTCP:LISTEN
-curl -sS http://localhost:8765/api/agents | python3 -m json.tool
-curl -sS http://localhost:8765/api/mcp | python3 -m json.tool
+pip install .
+tool-hub --help
+tool-hub-web --host 127.0.0.1 --port 8765 --no-browser
 ```
 
-检查 Codex 配置扫描：
+## 测试与发布
+
+当前测试命令：
 
 ```bash
-python3 - <<'PY'
-import importlib.util, json
-path='/Users/wayne/AI产物/skills/tool-hub/tool_hub_server.py'
-spec=importlib.util.spec_from_file_location('tool_hub_server', path)
-mod=importlib.util.module_from_spec(spec)
-spec.loader.exec_module(mod)
-agent={
-  'id':'codex',
-  'name':'Codex',
-  'mcp_config_path':'/Users/wayne/.codex/config.toml',
-  'mcp_config_key':'mcp_servers'
-}
-mcps=mod.read_agent_mcp_config(agent)
-print(json.dumps({'count': len(mcps), 'has_node_repl': 'node_repl' in mcps}, ensure_ascii=False, indent=2))
-PY
+python3 -m unittest discover -s tests -v
+python3 -m compileall tool_hub
+python3 -m py_compile tool_hub_server.py
 ```
 
-## 注意事项
+当前测试覆盖：
 
-- 不要在交接文档或提交信息中粘贴 MCP headers、API key、token 等敏感值。
-- `/api/mcp` 返回里可能包含某些 Agent MCP 的认证 headers；排查时只看结构和状态即可。
-- Codex TOML 写入逻辑目前是定向追加/替换 `[mcp_servers.<name>]` 相关 section，不会重写整个 `config.toml`。
-- 当前 TOML parser 是轻量实现，主要覆盖 Codex MCP 配置的常见字符串、数字、布尔、数组、子表场景；如果后续出现更复杂 TOML 语法，建议引入标准 TOML 库或进一步收紧格式支持。
+- `tests/test_phase0_core.py`
+- `tests/test_phase2_services.py`
+- `tests/test_phase3_safety.py`
+- `tests/test_phase4_cli.py`
+- `tests/test_phase5_registry.py`
+- `tests/test_phase6_services.py`
+- `tests/test_phase7_services.py`
+- `tests/test_phase7_e2e.py`
+- `tests/test_packaging.py`
+- `tests/test_docs_closure.py`
 
-## Suggested Skills
+发布相关文件：
 
-- `mattpocock-skills:handoff`：继续交接或压缩上下文时使用。
-- `vps-ops`：如果后续需要检查 VPS 上同步后的 Tool Hub 或远程服务状态时使用。
-- `skill-creator`：如果要把 Tool Hub 工作流整理成正式 Codex skill 时使用。
-- `browser:control-in-app-browser`：如果需要验证 HTML 前端交互或截图时使用。
+- `pyproject.toml`
+- `tool_hub/index.html`
+- `tool_hub_server.py`
+
+## 边界
+
+边界不要搞混：
+
+- 这是本机个人工具，不是多用户平台。
+- 默认只监听 `127.0.0.1`。
+- CORS 只允许同源 localhost / `127.0.0.1`。
+- `agent_id` / `skill_id` / `MCP 名称` 都做 slug 校验。
+- 删除 skill 会做路径归一化，避免越界删目录。
+- JSON / TOML 写入前自动备份。
+- `fetch_tools=false` 是默认值；`mcp test --no-exec` 就是这个边界的 CLI 映射。
+- 上传 zip 必须有 `SKILL.md` frontmatter，且要求 `name` / `description`。
+- multipart `filename` 也必须是普通文件名，不能带路径或 `..`。
+- MCP 的 `env` / `headers` 允许明文存在配置里，这是显式设计，不是漏掉。
+
+## 当前判断
+
+这一轮已经完成主线收口，当前仓库可以按下面理解：
+
+- 业务主线可用。
+- 解压可直接启动，可测试。
+- 主要边界清楚。
+- 还可以继续做的，只剩“进一步瘦 `tool_hub/http_app.py`”这类增量优化，不是必须修的阻塞项。
+
+## 给 Review Agent
+
+建议 review 时重点盯：
+
+1. `tool_hub/services/config.py`
+2. `tool_hub/services/upload.py`
+3. `tool_hub/http_app.py`
+4. `tool_hub/cli.py`
+5. `tests/test_phase7_services.py`
+6. `tests/test_phase7_e2e.py`
+
+建议重点判断：
+
+- service 下沉后是否有行为回归
+- CLI `skills gather/toggle` 是否和 HTTP 语义一致
+- `mcp test --no-exec` 的安全边界是否还在
+- 文档描述是否和当前代码一致
+
+这轮可以先忽略：
+
+- 安装流程是否足够优雅
+- 更进一步的 `http_app.py` 继续拆分
+- 版本号 / changelog / 正式发布流程
+
+如果还有下一轮，优先级建议：
+
+1. 继续下沉 `user-info` / `network-info` / `choose-file` / `choose-folder`
+2. 视需要补更多 CLI 子命令
+3. 再考虑更细的发布版本号和 changelog 流程

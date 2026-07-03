@@ -1,0 +1,14 @@
+{
+  "id": "qoder",
+  "name": "Qoder",
+  "skills_dir_candidates": [
+    "~/.qoder/skills"
+  ],
+  "mcp_config_candidates": [
+    "~/Library/Application Support/Qoder/SharedClientCache/mcp.json",
+    "~/Library/Application Support/Qoder/mcp.json",
+    "~/.config/Qoder/mcp.json",
+    "~/AppData/Roaming/Qoder/mcp.json"
+  ],
+  "mcp_config_key": "mcpServers"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "claude-code",
+  "name": "Claude Code",
+  "skills_dir_candidates": [
+    "~/.claude/skills"
+  ],
+  "mcp_config_candidates": [
+    "~/.claude.json",
+    "~/.claude/settings.json"
+  ],
+  "mcp_config_key": "mcpServers"
+}

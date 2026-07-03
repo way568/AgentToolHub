@@ -1,0 +1,7 @@
+{
+  "id": "wukong",
+  "name": "悟空",
+  "skills_dir_glob": ".real/users/user-*/.skills",
+  "mcp_config_glob": ".real/users/user-*/.mcp/mcpServerConfig.json",
+  "mcp_config_key": "mcpServers"
+}

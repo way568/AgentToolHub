@@ -1,0 +1,13 @@
+{
+  "id": "aone-copilot",
+  "name": "Aone Copilot",
+  "skills_dir_candidates": [
+    "~/.aone_copilot/skills",
+    "~/.aone_copilot/plugins/cache/git/obra-superpowers/5.1.0/skills",
+    "~/.claude/skills"
+  ],
+  "mcp_config_candidates": [
+    "~/.aone_copilot/mcp_servers.json"
+  ],
+  "mcp_config_key": "mcpServers"
+}

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tool-hub"
+version = "0.1.0"
+description = "本机优先的 Skill / MCP 管理台"
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.scripts]
+tool-hub = "tool_hub.cli:main"
+tool-hub-web = "tool_hub.server:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["tool_hub*"]
+
+[tool.setuptools.package-data]
+tool_hub = ["index.html"]

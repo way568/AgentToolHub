@@ -3,6 +3,44 @@
   "config_path": "~/.claude/settings.json",
   "config_key": "mcpServers",
   "supported_types": ["stdio", "sse", "streamableHttp"],
+  "read_mapping": {
+    "headers_fields": ["headers", "http_headers"],
+    "type_aliases": {
+      "http": "streamableHttp",
+      "streamableHttp": "streamableHttp",
+      "sse": "sse"
+    }
+  },
+  "write_mapping": {
+    "stdio": {
+      "required_fields": ["command", "args"],
+      "optional_fields": ["env"],
+      "transform": "no_type_field",
+      "example": {
+        "command": "npx",
+        "args": ["@playwright/mcp@latest"]
+      }
+    },
+    "sse": {
+      "required_fields": ["type", "url"],
+      "optional_fields": ["headers"],
+      "type_field_value": "sse",
+      "example": {
+        "type": "sse",
+        "url": "https://example.com/mcp/sse"
+      }
+    },
+    "streamableHttp": {
+      "required_fields": ["type", "url"],
+      "optional_fields": ["headers"],
+      "type_field_value": "http",
+      "example": {
+        "type": "http",
+        "url": "https://example.com/mcp",
+        "headers": {"x-api-key": "your-key"}
+      }
+    }
+  },
   "type_mapping": {
     "stdio": {
       "required_fields": ["command", "args"],
