@@ -436,6 +436,8 @@ def parse_agent_mcp_to_standard(name, raw_config):
         std["type"] = "unknown"
     if raw_config.get("headers"):
         std["headers"] = raw_config["headers"]
+    elif raw_config.get("http_headers"):
+        std["headers"] = raw_config["http_headers"]
     return std
 
 
@@ -694,7 +696,7 @@ def adapt_mcp_for_agent(mcp_data, agent_id):
             result["type"] = mapping.get("type_field_value", mcp_type)
         result["url"] = mcp_data.get("url", "")
         if mcp_data.get("headers"):
-            result["headers"] = mcp_data["headers"]
+            result[mapping.get("headers_field", "headers")] = mcp_data["headers"]
     return result
 
 def _build_raw_config(mcp_data):

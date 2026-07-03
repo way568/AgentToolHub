@@ -18,19 +18,22 @@
       "required_fields": ["type", "url"],
       "optional_fields": ["headers"],
       "type_field_value": "sse",
+      "headers_field": "http_headers",
       "example": {
         "type": "sse",
-        "url": "https://example.com/mcp/sse"
+        "url": "https://example.com/mcp/sse",
+        "http_headers": {"x-api-key": "your-key"}
       }
     },
     "streamableHttp": {
       "required_fields": ["type", "url"],
       "optional_fields": ["headers"],
       "type_field_value": "streamableHttp",
+      "headers_field": "http_headers",
       "example": {
         "type": "streamableHttp",
         "url": "https://example.com/mcp",
-        "headers": {"x-api-key": "your-key"}
+        "http_headers": {"x-api-key": "your-key"}
       }
     }
   }
