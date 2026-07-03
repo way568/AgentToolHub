@@ -1,0 +1,36 @@
+{
+  "agent_id": "aone-copilot",
+  "config_path": "~/.aone_copilot/mcp_servers.json",
+  "config_key": "mcpServers",
+  "supported_types": ["stdio", "sse", "streamableHttp"],
+  "type_mapping": {
+    "stdio": {
+      "required_fields": ["command", "args"],
+      "optional_fields": ["env"],
+      "transform": "no_type_field",
+      "example": {
+        "command": "npx",
+        "args": ["@playwright/mcp@latest"]
+      }
+    },
+    "sse": {
+      "required_fields": ["type", "url"],
+      "optional_fields": ["headers"],
+      "type_field_value": "sse",
+      "example": {
+        "type": "sse",
+        "url": "https://example.com/mcp/sse"
+      }
+    },
+    "streamableHttp": {
+      "required_fields": ["type", "url"],
+      "optional_fields": ["headers"],
+      "type_field_value": "streamableHttp",
+      "example": {
+        "type": "streamableHttp",
+        "url": "https://example.com/mcp",
+        "headers": {"x-api-key": "your-key"}
+      }
+    }
+  }
+}

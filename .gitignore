@@ -1,0 +1,12 @@
+# macOS Finder metadata
+.DS_Store
+**/.DS_Store
+.gitignore 15.05.32
+
+# Local Tool Hub state
+.hub-path
+
+# Python/runtime output
+__pycache__/
+*.py[cod]
+*.log
