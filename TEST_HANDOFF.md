@@ -1,4 +1,4 @@
-# Tool Hub 测试 Handoff
+# AgentToolHub 测试 Handoff
 
 目标：
 
@@ -16,8 +16,8 @@
 
 ```bash
 mkdir -p dist
-git archive --format=zip --prefix=tool-hub/ HEAD -o dist/tool-hub-manual-test.zip
-unzip -t dist/tool-hub-manual-test.zip
+git archive --format=zip --prefix=agent-tool-hub/ HEAD -o dist/agent-tool-hub-manual-test.zip
+unzip -t dist/agent-tool-hub-manual-test.zip
 ```
 
 预期：
@@ -31,7 +31,7 @@ unzip -t dist/tool-hub-manual-test.zip
 
 - 新建一个临时目录做解压测试
 - 不要直接在当前开发仓库里点点点
-- 如果本机已有旧 `tool-hub` 进程，先停掉
+- 如果本机已有旧 `tool-hub` / `AgentToolDock` / `AgentToolHub` 进程，先停掉
 
 前提：
 
@@ -40,8 +40,8 @@ unzip -t dist/tool-hub-manual-test.zip
 
 ## 3. 解压即用主路径
 
-1. 解压 `dist/tool-hub-manual-test.zip`
-2. 进入解压后的 `tool-hub/`
+1. 解压 `dist/agent-tool-hub-manual-test.zip`
+2. 进入解压后的 `agent-tool-hub/`
 3. 启动：
 
 ```bash
@@ -52,14 +52,14 @@ python3 tool_hub_server.py
 
 - 服务启动成功
 - 没有直接抛异常
-- 默认监听 `127.0.0.1:8765`
+- 默认监听 `127.0.0.1:8998`
 
 ## 4. 页面初始化
 
 浏览器打开：
 
 ```text
-http://127.0.0.1:8765
+http://127.0.0.1:8998
 ```
 
 初始化步骤：

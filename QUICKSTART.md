@@ -1,4 +1,4 @@
-# Tool Hub 最小发布说明
+# AgentToolHub 最小发布说明
 
 结论：
 
@@ -22,13 +22,13 @@ python3 tool_hub_server.py
 或用模块命令启动：
 
 ```bash
-python3 -m tool_hub.cli web --host 127.0.0.1 --port 8765 --no-browser
+python3 -m tool_hub.cli web --host 127.0.0.1 --port 8998 --no-browser
 ```
 
 启动后打开：
 
 ```text
-http://127.0.0.1:8765
+http://127.0.0.1:8998
 ```
 
 如果只想先做环境确认：
@@ -51,7 +51,7 @@ python3 -m tool_hub.cli doctor
 
 建议：
 
-- 用一个单独目录，比如 `~/tool-hub`
+- 用一个单独目录，比如 `~/agent-tool-hub`
 - 不要直接指到某个 Agent 自己的 `skills_dir`
 
 如果 Agent 没自动识别：
@@ -134,7 +134,7 @@ python3 -m tool_hub.cli web
 - 说明：上传的 multipart `filename` 带了路径、`..` 或绝对路径
 - 处理：用普通文件名，比如 `demo.zip`
 
-`端口 8765 不可用`
+`端口 8998 不可用`
 
 - 说明：端口被占了
 - 处理：停掉占用进程，或换端口：

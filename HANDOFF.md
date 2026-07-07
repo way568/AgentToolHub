@@ -1,4 +1,4 @@
-# Tool Hub 交接文档
+# AgentToolHub 交接文档
 
 生成时间：2026-07-03
 
@@ -12,7 +12,8 @@
 - `tool_hub/http_app.py` 又薄了一刀，`config` / `upload skill` 已从 HTTP 层下沉。
 - CLI 已补 `skills gather` / `skills toggle`。
 - HTTP / CLI 端到端测试已补齐主流程。
-- 发布收口已完成：`pyproject.toml`、`tool-hub`、`tool-hub-web` 已到位。
+- 开源命名已改为 `AgentToolHub`，安装包名为 `agent-tool-hub`。
+- 新命令 `agent-tool-hub`、`agent-tool-hub-web` 已到位；旧命令 `agent-tool-dock`、`agent-tool-dock-web`、`tool-hub`、`tool-hub-web` 暂时保留为迁移兼容入口。
 - `README.md` 和 `HANDOFF.md` 已按当前真实结构更新。
 - 当前 review 口径：先按“解压即用”看，不把安装流程当阻塞项。
 
@@ -48,8 +49,9 @@ tool-hub/
       upload.py
     skills/
       backends.py
-  agent-presets/
-  mcp-adapters/
+    data/
+      agent-presets/
+      mcp-adapters/
   tests/
   tool_hub_server.py
 ```
@@ -62,6 +64,7 @@ tool-hub/
 - `tool_hub/services/skills.py`：scan/gather/toggle/sync/delete。
 - `tool_hub/services/mcp.py`：list/add/edit/delete/gather/toggle/test。
 - `tool_hub/services/audit.py`：log list / rollback / undo。
+- 运行期内置资源位于 `tool_hub/data/agent-presets/` 和 `tool_hub/data/mcp-adapters/`，可随 Python package 一起安装。
 
 ## 命令
 
@@ -69,7 +72,7 @@ tool-hub/
 
 ```bash
 python3 tool_hub_server.py
-python3 -m tool_hub.cli web --host 127.0.0.1 --port 8765 --no-browser
+python3 -m tool_hub.cli web --host 127.0.0.1 --port 8998 --no-browser
 ```
 
 常用模块命令：
@@ -91,8 +94,12 @@ python3 -m tool_hub.cli skills toggle --skill-id demo --agent-id cursor
 
 ```bash
 pip install .
+agent-tool-hub --help
+agent-tool-hub-web --host 127.0.0.1 --port 8998 --no-browser
+
+# legacy aliases
 tool-hub --help
-tool-hub-web --host 127.0.0.1 --port 8765 --no-browser
+tool-hub-web --host 127.0.0.1 --port 8998 --no-browser
 ```
 
 ## 测试与发布

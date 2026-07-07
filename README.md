@@ -1,115 +1,123 @@
-# Tool Hub
+# AgentToolHub
 
-结论：
+Local-first control panel for AI agent tools, Skills, and MCP servers.
 
-- 现在主路径是“解压即用”的本机工具，不依赖安装流程。
-- CLI / Web 入口已经拆清楚，安装入口只是可选能力。
-- 核心业务在 `service` 层，`tool_hub/http_app.py` 主要负责 HTTP 壳。
-- 默认按“个人可信工具”设计，不做多用户认证。
+AgentToolHub helps you manage local AI agent capabilities without scattering Skills and MCP server configs across multiple agent directories. It focuses on a local, auditable workflow: scan, gather, link, unlink, toggle, and test tools before exposing them to agents.
 
-最小使用说明见 `QUICKSTART.md`。
+Chinese quick start: see [`QUICKSTART.md`](QUICKSTART.md). Legacy Chinese project notes can be kept in `README.zh-CN.md` when needed.
 
-## 当前结构
+## Why
 
-```text
-tool-hub/
-  pyproject.toml
-  tool_hub/
-    cli.py
-    server.py
-    http_app.py
-    index.html
-    config_store.py
-    presets.py
-    safety.py
-    audit.py
-    backends/
-      json_cfg.py
-      toml_cfg.py
-      registry.py
-    mcp/
-      adapters.py
-      agent_config.py
-      runtime.py
-      store.py
-    services/
-      agents.py
-      audit.py
-      config.py
-      mcp.py
-      skills.py
-      upload.py
-    skills/
-      backends.py
-  agent-presets/
-  mcp-adapters/
-  tests/
-  tool_hub_server.py
-```
+- Manage local AI agent Skills and MCP servers in one place.
+- Link, unlink, gather, and audit local tools safely.
+- Run locally by default on `127.0.0.1`.
 
-关键职责：
+## Status
 
-- `tool_hub/cli.py`：CLI 入口。
-- `tool_hub/server.py`：Web 启动入口。
-- `tool_hub/http_app.py`：路由、HTTP 编解码、少量基础接口。
-- `tool_hub/services/config.py`：配置初始化、读取、Agent 列表。
-- `tool_hub/services/upload.py`：`multipart/form-data` 解析、zip 校验、skill 落盘。
-- `tool_hub/services/skills.py`：scan/gather/toggle/sync/delete。
-- `tool_hub/services/mcp.py`：MCP 列表、增删改、gather、toggle、test。
+AgentToolHub is currently packaged as a local developer utility. The public package and command names use `agent-tool-hub`. Internal Python imports still use `tool_hub` in v0.1.0 for compatibility.
 
-## 启动方式
+## Quick Start
 
-推荐直接用：
-
-```bash
-python3 tool_hub_server.py
-python3 -m tool_hub.cli web --host 127.0.0.1 --port 8765 --no-browser
-python3 -m tool_hub.cli doctor
-```
-
-如果只想跑 Web，这就是主路径。
-
-可选安装入口还保留：
+Install from the source tree:
 
 ```bash
 pip install .
+agent-tool-hub --help
+agent-tool-hub-web --host 127.0.0.1 --port 8998 --no-browser
+```
+
+Common CLI commands:
+
+```bash
+agent-tool-hub doctor
+agent-tool-hub agents list
+agent-tool-hub mcp list
+agent-tool-hub mcp test --name playwright --no-exec
+agent-tool-hub skills gather --name demo --from /abs/path/demo --agent-id codex
+agent-tool-hub skills toggle --skill-id demo --agent-id cursor
+agent-tool-hub web
+```
+
+Legacy command aliases are kept for migration:
+
+```bash
+agent-tool-dock --help
+agent-tool-dock-web --host 127.0.0.1 --port 8998 --no-browser
 tool-hub --help
-tool-hub-web --host 127.0.0.1 --port 8765 --no-browser
+tool-hub-web --host 127.0.0.1 --port 8998 --no-browser
 ```
 
-不走安装时，也可以直接用模块命令：
+## What It Manages
 
-```bash
-python3 -m tool_hub.cli agents list
-python3 -m tool_hub.cli mcp list
-```
+- Built-in agent presets and MCP adapter rules.
+- Local Skill directories.
+- MCP server definitions and adapter configs.
+- Link-based Skill enable / disable state: symlink on macOS / Linux, directory junction on Windows.
+- JSON / TOML agent configuration writes with backups.
 
-## 常用命令
+## Safety Model
 
-```bash
-python3 -m tool_hub.cli doctor
-python3 -m tool_hub.cli agents list
-python3 -m tool_hub.cli mcp list
-python3 -m tool_hub.cli mcp test --name playwright --no-exec
-python3 -m tool_hub.cli skills gather --name demo --from /abs/path/demo --agent-id codex
-python3 -m tool_hub.cli skills toggle --skill-id demo --agent-id cursor
-python3 -m tool_hub.cli web
-```
+AgentToolHub is designed for a single trusted user on a local machine.
 
-`skills` 命令语义：
+- The web server listens on `127.0.0.1` by default.
+- CORS is limited to localhost / `127.0.0.1` origins.
+- It reads local Skill directories and MCP configuration files.
+- It may create / remove managed directory links.
+- On macOS / Linux, Skill links use symlinks.
+- On Windows, Skill links use directory junctions via `mklink /J` where possible.
+- It may write JSON / TOML config files.
+- Config files are backed up before writes.
+- MCP `env` / `headers` values are not encrypted at rest.
+- `fetch_tools=false` is the default safety value; stdio MCP tools are not auto-fetched by default.
 
-- `skills gather`：把某个 Agent 目录里的 skill 移入 Hub，并在原目录补回 symlink。
-  - 必须提供真实 `agent_id`，且 `from` 路径必须属于该 Agent 的 `skills_dir`。
-- `skills toggle`：给目标 Agent 开/关某个已管理 skill。
+Do not expose AgentToolHub directly to the public internet. See [`SECURITY.md`](SECURITY.md).
 
-`mcp test` 语义：
+## Boundaries
 
-- `python3 -m tool_hub.cli mcp test --name xxx --no-exec`：只测连通性，不拉 tools 描述。
-- 不带 `--no-exec`：等价 `fetch_tools=true`，允许补 MCP 描述。
+Current boundaries:
 
-## HTTP 面
+- No multi-user authentication.
+- No public SaaS deployment model.
+- No secret vault for MCP `env` / `headers`.
+- macOS is the primary tested platform.
+- Windows support is experimental and mechanism-supported, but not verified with a real Windows end-to-end test run.
+- Windows junction handling has a compatibility layer, but Windows workflows should be manually validated before being advertised as fully supported.
 
-主接口：
+## Windows Link Support
+
+AgentToolHub uses managed directory links to enable / disable Skills inside agent-specific Skill directories. On macOS and Linux this is implemented with symlinks. On Windows, AgentToolHub uses directory junctions via `cmd /c mklink /J <link> <target>` where possible.
+
+Rationale:
+
+- AgentToolHub only needs to link directories, not individual files.
+- Microsoft documents `mklink /J` as the command option for creating a Directory Junction, while `mklink /D` creates a directory symbolic link.
+- Microsoft documents junctions as directory links that can point to directories on different local volumes on the same computer, but not to mapped network volumes or files.
+- Windows symbolic links can work, but symlink creation may depend on Developer Mode, elevation, or local security policy. Junctions are a more compatible default for this project because the managed Skill target is a local directory.
+
+Expected Windows behavior:
+
+- Local NTFS folders are the intended target.
+- Cross-drive local folders should be viable for junctions.
+- Mapped network drives are not supported for junction targets.
+- File links are not supported by AgentToolHub's Skill linking model.
+- Junction removal should remove only the managed link, not the central Skill directory.
+
+Validation status:
+
+- The compatibility layer is covered by automated tests and POSIX-side behavior checks.
+- Windows-specific behavior has been evaluated against Microsoft documentation, but has not been manually tested on a real Windows machine.
+- Until a real Windows workflow is tested, Windows support should be described as experimental rather than fully supported.
+
+References:
+
+- Microsoft Learn: `mklink` command — https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/mklink
+- Microsoft Learn: Hard links and junctions — https://learn.microsoft.com/en-us/windows/win32/fileio/hard-links-and-junctions
+- Microsoft Learn: Creating symbolic links — https://learn.microsoft.com/en-us/windows/win32/fileio/creating-symbolic-links
+- Windows Developer Blog: Symlinks in Windows 10 — https://blogs.windows.com/windowsdeveloper/2016/12/02/symlinks-windows-10/
+
+## HTTP Surface
+
+Main endpoints:
 
 - `GET /api/config`
 - `PUT /api/config`
@@ -120,49 +128,52 @@ python3 -m tool_hub.cli web
 - `POST /api/skills/<id>/toggle`
 - `POST /api/mcp/<name>/test`
 
-当前 `tool_hub/http_app.py` 已经不再承载 `config` 和 `upload skill` 业务细节；这两块已经下沉到 `service`。
-
-## 边界
-
-当前边界很明确：
-
-- Web 默认只监听 `127.0.0.1`。
-- CORS 只允许同源 localhost / `127.0.0.1`。
-- `agent_id` / `skill_id` / `MCP 名称` 统一做 slug 校验。
-- 删除 skill 走路径归一化，避免越界删除。
-- JSON / TOML 配置写入前自动备份。
-- `fetch_tools=false` 是默认安全值；stdio MCP 默认不自动扫 tools。
-- 上传 skill 只接受 `.zip`，且必须带 `SKILL.md` frontmatter，并且要求 `name` / `description`。
-  - multipart 里的 `filename` 也必须是普通文件名，不能带路径或 `..`。
-
-不做的事也很明确：
-
-- 不做多用户认证。
-- 不隐藏 MCP 的 `env` / `headers` 明文存储能力。
-- 不把它当公网 SaaS。
-
-## 验证
+## Validation
 
 ```bash
 python3 -m unittest discover -s tests -v
-python3 -m compileall tool_hub
-python3 -m py_compile tool_hub_server.py
 ```
 
-当前测试已经覆盖：
+Current tests cover:
 
-- service：`ConfigService` / `UploadSkillService` / Skill / MCP / Audit
-- CLI 端到端：`agents list`、`mcp test --no-exec`、`skills gather/toggle`
-- HTTP 端到端：`config`、`agents`、`skills upload`
-- 文档和打包断言：`README.md`、`HANDOFF.md`、`pyproject.toml`
+- services: `ConfigService`, `UploadSkillService`, Skill, MCP, Audit
+- CLI flows: `agents list`, `mcp test --no-exec`, `skills gather`, `skills toggle`
+- HTTP flows: config, agents, skills upload
+- docs and packaging assertions: `README.md`, `HANDOFF.md`, `pyproject.toml`
 
-## Review 重点
+## Developer Compatibility Notes
 
-如果交给别的 agent review，重点看这几件事：
+The public project name is `AgentToolHub` and the package name is `agent-tool-hub`.
 
-- `ConfigService` / `UploadSkillService` 下沉后，HTTP 行为有没有变。
-- `skills gather/toggle` 的 symlink 和配置写回是否一致。
-- `mcp test --no-exec` 是否仍然严格对应 `fetch_tools=false`。
-- 本机边界有没有被放松：`127.0.0.1`、CORS、slug/path 校验、写前备份。
+For v0.1.0 compatibility:
 
-这轮 review 不需要把“安装流程是否优雅”当主问题。当前产品定位下，`解压即用` 才是主路径。
+- Internal Python imports remain `tool_hub`.
+- The source-tree web entry remains `python3 tool_hub_server.py`.
+- Direct module commands remain available, for example `python3 -m tool_hub.cli doctor`.
+- Legacy CLI commands `agent-tool-dock`, `agent-tool-dock-web`, `tool-hub`, and `tool-hub-web` remain available.
+- Existing local config files such as `tool-hub.json` are not renamed automatically in this pass.
+- The built-in presets and adapters are packaged under `tool_hub/data/`.
+- Developer checks can still use `python3 -m compileall tool_hub` and `python3 -m py_compile tool_hub_server.py`.
+
+Minimal source layout:
+
+```text
+agent-tool-hub/
+  pyproject.toml
+  tool_hub/                 # internal Python package kept for compatibility
+    cli.py
+    server.py
+    http_app.py
+    linking.py
+    services/
+    mcp/
+    data/
+      agent-presets/
+      mcp-adapters/
+  tests/
+  tool_hub_server.py
+```
+
+## License
+
+MIT License. See [`LICENSE`](LICENSE).

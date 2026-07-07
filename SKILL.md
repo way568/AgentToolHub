@@ -1,15 +1,15 @@
 ---
-name: tool-hub
-description: "跨 Agent 统一管理台 — 管理 Skill + MCP Server。支持 skill 归聚/启用/禁用/扫描/回滚，以及 MCP Server 的添加/编辑/删除/连通性测试/一键分发到各 Agent。触发词：tool hub、skill hub、管理skill、管理mcp、打开管理台、启用skill、禁用skill、添加mcp、mcp管理。"
+name: agent-tool-hub
+description: "跨 Agent 统一管理台 — 管理 Skill + MCP Server。支持 skill 归聚/启用/禁用/扫描/回滚，以及 MCP Server 的添加/编辑/删除/连通性测试/一键分发到各 Agent。触发词：AgentToolHub、tool hub、skill hub、管理skill、管理mcp、打开管理台、启用skill、禁用skill、添加mcp、mcp管理。"
 ---
 
-# Tool Hub — 跨 Agent 统一管理台
+# AgentToolHub — 跨 Agent 统一管理台
 
 统一管理本机所有 AI Agent 应用的 **Skill** 和 **MCP Server**，提供 Web 矩阵视图一站式管控。
 
 ## 何时触发
 
-- 用户说"打开管理台"、"tool hub"、"skill hub"
+- 用户说"打开管理台"、"AgentToolHub"、"tool hub"、"skill hub"
 - 用户说“管理skill”、"启用/禁用某个 skill"、"扫描 skill"、"归聚 skill"
 - 用户说"添加 MCP"、"管理 MCP"、"MCP 列表"
 - 用户使用 agent 安装新的 skill 或 MCP 时
@@ -18,11 +18,11 @@ description: "跨 Agent 统一管理台 — 管理 Skill + MCP Server。支持 s
 
 ### 方式一：让 Agent 帮你启动
 
-告诉 agent：「打开 tool hub」「打开管理台」，agent 负责启动服务并打开浏览器。
+告诉 agent：「打开 AgentToolHub」「打开管理台」，agent 负责启动服务并打开浏览器。
 
 ### 方式二：Web 管理台
 
-MAC 上直接双击：`启动控制台.command`，服务启动后自动打开浏览器 `http://localhost:8765`。
+macOS 上直接双击：`run.command`，服务启动后自动打开浏览器 `http://localhost:8998`。
 
 首次使用会引导设置中央仓库路径和检测已有 agent 应用。
 
@@ -52,9 +52,9 @@ MAC 上直接双击：`启动控制台.command`，服务启动后自动打开浏
 
 - Python 3.8+
 - 零外部依赖（纯标准库）
-- 端口 8765
+- 端口 8998
 - **必须后台启动**：`tool_hub_server.py` 是长驻 HTTP 服务，Agent 启动时必须使用后台模式（如 `is_background=true` 或 `nohup ... &`），否则会阻塞 AI 对话。
-- **仅支持 macOS**（依赖 symlink 和 AppleScript 目录选择器，Windows 暂不兼容）
+- macOS 为主要验证平台；Windows support 仍是 experimental / planned，未实机验证前不要宣称完整支持。
 
 ## 文件结构
 
@@ -62,8 +62,10 @@ MAC 上直接双击：`启动控制台.command`，服务启动后自动打开浏
 tool-hub/
 ├── SKILL.md              ← 本文件
 ├── tool_hub_server.py    ← 后端服务
-├── index.html            ← 前端界面
-└── mcp-adapters/         ← Agent MCP 适配器规则
-    ├── claude-code.json
-    └── aone-copilot.json
+├── tool_hub/
+│   ├── index.html        ← 前端界面（实际 serve / 打包使用）
+│   └── data/
+│       ├── agent-presets/← Agent 检测预设
+│       └── mcp-adapters/ ← Agent MCP 适配器规则
+└── tests/
 ```
