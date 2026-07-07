@@ -3,10 +3,18 @@
 **/.DS_Store
 .gitignore 15.05.32
 
-# Local Tool Hub state
+# Local AgentToolHub state
 .hub-path
+.agent-tool-hub/
+.agent-tool-dock/
+OPEN_SOURCE_NEXT_HANDOFF.md
 
 # Python/runtime output
 __pycache__/
 *.py[cod]
 *.log
+.pytest_cache/
+.mypy_cache/
+build/
+dist/
+*.egg-info/
