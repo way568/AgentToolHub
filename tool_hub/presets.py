@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-PRESET_DIR = Path(__file__).resolve().parents[1] / "agent-presets"
+PRESET_DIR = Path(__file__).resolve().parent / "data" / "agent-presets"
 
 
 def _home():

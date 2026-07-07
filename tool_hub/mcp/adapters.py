@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 
-MCP_ADAPTERS_DIR = Path(__file__).resolve().parents[2] / "mcp-adapters"
+MCP_ADAPTERS_DIR = Path(__file__).resolve().parents[1] / "data" / "mcp-adapters"
 
 
 def load_adapter(agent_id):
