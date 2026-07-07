@@ -12,7 +12,7 @@ from tool_hub.mcp.agent_config import (
     remove_agent_mcp_entry,
     write_agent_mcp_entry,
 )
-from tool_hub.mcp.runtime import fetch_mcp_tools_description, test_mcp_connectivity
+from tool_hub.mcp.runtime import fetch_mcp_tools, fetch_mcp_tools_description, test_mcp_connectivity
 from tool_hub.mcp.store import delete_mcp, get_mcp_dir, load_all_mcp, save_mcp
 from tool_hub.safety import validate_slug
 
@@ -92,6 +92,20 @@ class McpService:
         if not config:
             raise ToolHubError("未初始化")
         hub_path = config.get("hub_path", get_default_hub_path())
+
+        if self._has_pasted_mcp_config(body):
+            mcps = self._parse_pasted_mcp_config(body)
+            for mcp_data in mcps:
+                mcp_data["created_at"] = datetime.now(timezone.utc).isoformat()
+                save_mcp(hub_path, mcp_data)
+            target_agents = body.get("target_agents", [])
+            for mcp_data in mcps:
+                for agent in config.get("agents", []):
+                    if agent["id"] in target_agents:
+                        adapted = adapt_mcp_for_agent(mcp_data, agent["id"])
+                        write_agent_mcp_entry(agent, mcp_data["name"], adapted)
+            return {"success": True, "mcp": mcps[0] if mcps else None, "mcps": mcps}
+
         mcp_data = {
             "name": body.get("name", "").strip(),
             "type": body.get("type", "stdio"),
@@ -127,11 +141,85 @@ class McpService:
             raise ToolHubError("MCP 不存在", status=404)
         with open(filepath, "r", encoding="utf-8") as fp:
             mcp_data = json.load(fp)
+
+        if self._has_pasted_mcp_config(body):
+            mcps = self._parse_pasted_mcp_config(body)
+            if len(mcps) != 1:
+                raise ToolHubError("编辑时只能粘贴一个 MCP Server 配置")
+            parsed = mcps[0]
+            if parsed["name"] != mcp_name:
+                raise ToolHubError("粘贴配置中的 MCP 名称必须与当前编辑项一致")
+            parsed["created_at"] = mcp_data.get("created_at", datetime.now(timezone.utc).isoformat())
+            save_mcp(hub_path, parsed)
+            return {"success": True, "mcp": parsed}
+
         for key in ["type", "description", "command", "args", "env", "url", "headers"]:
             if key in body:
                 mcp_data[key] = body[key]
         save_mcp(hub_path, mcp_data)
         return {"success": True, "mcp": mcp_data}
+
+    def _has_pasted_mcp_config(self, body):
+        return any(key in body for key in ["config_text", "mcpServers", "mcp_servers", "servers"])
+
+    def _parse_pasted_mcp_config(self, body):
+        raw = body
+        if "config_text" in body:
+            raw = self._parse_json_text(body.get("config_text", ""))
+        server_map = self._extract_server_map(raw)
+        if not server_map:
+            raise ToolHubError("未找到 mcpServers 配置")
+        mcps = []
+        for name, raw_config in server_map.items():
+            validate_slug(name, label="MCP 名称", error_cls=ToolHubError)
+            standard = parse_agent_mcp_to_standard(name, raw_config)
+            if not standard or standard.get("type") == "unknown":
+                raise ToolHubError(f"无法解析 MCP '{name}'：需要 command 或 url")
+            if standard.get("type") == "stdio":
+                if not standard.get("command"):
+                    raise ToolHubError(f"MCP '{name}' 缺少 command")
+                args = standard.get("args", [])
+                if args is None:
+                    standard["args"] = []
+                elif not isinstance(args, list):
+                    raise ToolHubError(f"MCP '{name}' 的 args 必须是数组")
+            else:
+                if not standard.get("url"):
+                    raise ToolHubError(f"MCP '{name}' 缺少 url")
+            mcps.append(standard)
+        return mcps
+
+    def _parse_json_text(self, text):
+        text = str(text or "").strip()
+        if not text:
+            raise ToolHubError("请粘贴 MCP 配置 JSON")
+        lines = text.splitlines()
+        if lines and lines[0].strip().startswith("```"):
+            lines = lines[1:]
+            if lines and lines[-1].strip().startswith("```"):
+                lines = lines[:-1]
+            text = "\n".join(lines).strip()
+        try:
+            raw = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ToolHubError(f"MCP 配置不是合法 JSON：{exc.msg}") from exc
+        if not isinstance(raw, dict):
+            raise ToolHubError("MCP 配置 JSON 必须是对象")
+        return raw
+
+    def _extract_server_map(self, raw):
+        if not isinstance(raw, dict):
+            raise ToolHubError("MCP 配置 JSON 必须是对象")
+        for key in ["mcpServers", "mcp_servers", "servers"]:
+            value = raw.get(key)
+            if isinstance(value, dict):
+                return value
+        if any(key in raw for key in ["command", "url"]):
+            name = raw.get("name", "").strip()
+            if not name:
+                raise ToolHubError("单个 MCP 配置缺少 name，请使用 mcpServers 包裹")
+            return {name: raw}
+        return None
 
     def delete_mcp(self, config, mcp_name):
         if not config:
@@ -183,10 +271,27 @@ class McpService:
         with open(filepath, "r", encoding="utf-8") as fp:
             mcp_data = json.load(fp)
         result = test_mcp_connectivity(mcp_data)
-        if fetch_tools and result.get("status") == "ok" and not mcp_data.get("description"):
-            auto_desc = fetch_mcp_tools_description(mcp_data)
-            if auto_desc:
-                mcp_data["description"] = auto_desc
-                save_mcp(hub_path, mcp_data)
-                result["auto_description"] = auto_desc
+        if fetch_tools and result.get("status") == "ok":
+            tools = fetch_mcp_tools(mcp_data)
+            mcp_data["tools"] = tools
+            mcp_data["tools_updated_at"] = datetime.now(timezone.utc).isoformat()
+            save_mcp(hub_path, mcp_data)
+            result["tools"] = tools
+            result["tools_count"] = len(tools)
+            if not mcp_data.get("description"):
+                auto_desc = self._format_tools_description(tools)
+                if auto_desc:
+                    mcp_data["description"] = auto_desc
+                    save_mcp(hub_path, mcp_data)
+                    result["auto_description"] = auto_desc
         return result
+
+    def _format_tools_description(self, tools):
+        tool_names = [tool.get("name", "") for tool in tools if tool.get("name")]
+        total = len(tool_names)
+        if not total:
+            return None
+        preview = ", ".join(tool_names[:5])
+        if total > 5:
+            return f"提供 {total} 个工具：{preview} 等"
+        return f"提供 {total} 个工具：{preview}"

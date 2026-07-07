@@ -1,10 +1,10 @@
-import os
 import shutil
 from pathlib import Path
 
 from tool_hub.audit import read_logs, update_log_entry
 from tool_hub.config_store import save_config
 from tool_hub.errors import ToolHubError
+from tool_hub.linking import create_link, is_managed_link, link_exists, remove_link
 
 
 class AuditService:
@@ -63,16 +63,16 @@ class AuditService:
                 dest = detail.get("to", "")
                 src = detail.get("from", "")
                 link_at_src = Path(src)
-                if link_at_src.is_symlink():
-                    link_at_src.unlink()
+                if is_managed_link(link_at_src):
+                    remove_link(link_at_src)
                 if Path(dest).exists():
                     shutil.move(dest, src)
                 skills.pop(skill_id, None)
                 config["skills"] = skills
             elif action == "link":
                 link_path = detail.get("link_path", "")
-                if Path(link_path).is_symlink():
-                    Path(link_path).unlink()
+                if is_managed_link(Path(link_path)):
+                    remove_link(Path(link_path))
                 agent_id = detail.get("agent_id", "")
                 if skill_id in skills:
                     agent_list = skills[skill_id].get("agents", [])
@@ -83,9 +83,9 @@ class AuditService:
             elif action == "unlink":
                 link_path = detail.get("link_path", "")
                 target = detail.get("target", "")
-                if not Path(link_path).exists() and Path(target).exists():
+                if not link_exists(Path(link_path)) and Path(target).exists():
                     Path(link_path).parent.mkdir(parents=True, exist_ok=True)
-                    os.symlink(target, link_path)
+                    create_link(Path(target), Path(link_path))
                 agent_id = detail.get("agent_id", "")
                 if skill_id in skills:
                     agent_list = skills[skill_id].get("agents", [])

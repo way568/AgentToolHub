@@ -8,6 +8,15 @@ from unittest.mock import patch
 
 
 class Phase2ServiceTests(unittest.TestCase):
+    def test_http_app_config_functions_alias_config_store(self):
+        from tool_hub import config_store, http_app
+
+        self.assertIs(http_app.get_default_hub_path, config_store.get_default_hub_path)
+        self.assertIs(http_app.get_saved_hub_path, config_store.get_saved_hub_path)
+        self.assertIs(http_app.save_hub_path_pointer, config_store.save_hub_path_pointer)
+        self.assertIs(http_app.load_config, config_store.load_config)
+        self.assertIs(http_app.save_config, config_store.save_config)
+
     def test_agent_service_adds_agent_and_persists_config(self):
         from tool_hub.config_store import load_config
         from tool_hub.services.agents import AgentService

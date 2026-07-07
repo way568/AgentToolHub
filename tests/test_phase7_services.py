@@ -71,7 +71,7 @@ class Phase7ServiceTests(unittest.TestCase):
             self.assertEqual(logs[0]["action"], "config")
             self.assertEqual(logs[0]["detail"]["action"], "update_config")
 
-    def test_config_service_get_config_marks_initialized_and_fills_feedback_url(self):
+    def test_config_service_get_config_marks_initialized(self):
         from tool_hub.services.config import ConfigService
 
         result = ConfigService().get_config(
@@ -83,7 +83,6 @@ class Phase7ServiceTests(unittest.TestCase):
         )
 
         self.assertTrue(result["initialized"])
-        self.assertIn("feedback_url", result)
 
     def test_upload_skill_service_extracts_zip_into_hub(self):
         from tool_hub.services.upload import UploadSkillService
@@ -214,6 +213,41 @@ class Phase7ServiceTests(unittest.TestCase):
                     body,
                 )
 
+    def test_mcp_service_imports_pasted_json(self):
+        from tool_hub.services.mcp import McpService
+
+        with tempfile.TemporaryDirectory() as tmp:
+            hub_path = Path(tmp) / "hub"
+            config = {"hub_path": str(hub_path), "agents": []}
+            pasted = json.dumps({"mcpServers": {"alpha": {"command": "node", "args": ["server.js"]}}})
+
+            result = McpService().add_mcp(config, {"config_text": pasted})
+
+            self.assertTrue(result["success"])
+            self.assertEqual(result["mcp"]["name"], "alpha")
+            self.assertTrue((hub_path / "mcp" / "alpha.json").exists())
+
+    def test_mcp_service_imports_multiple_pasted_json_servers(self):
+        from tool_hub.services.mcp import McpService
+
+        with tempfile.TemporaryDirectory() as tmp:
+            hub_path = Path(tmp) / "hub"
+            config = {"hub_path": str(hub_path), "agents": []}
+            pasted = json.dumps(
+                {
+                    "mcpServers": {
+                        "alpha": {"command": "node", "args": ["server.js"]},
+                        "beta": {"type": "streamableHttp", "url": "http://localhost:8000"},
+                    }
+                }
+            )
+
+            result = McpService().add_mcp(config, {"config_text": pasted})
+
+            self.assertEqual([item["name"] for item in result["mcps"]], ["alpha", "beta"])
+            self.assertTrue((hub_path / "mcp" / "alpha.json").exists())
+            self.assertTrue((hub_path / "mcp" / "beta.json").exists())
+
     def test_skill_service_toggle_rejects_stale_path(self):
         from tool_hub.errors import ToolHubError
         from tool_hub.services.skills import SkillService
@@ -260,6 +294,37 @@ class Phase7ServiceTests(unittest.TestCase):
 
             with self.assertRaises(ToolHubError):
                 SkillService().toggle_skill(config, "alpha", {"agent_id": "cursor"})
+
+    def test_skill_service_toggle_backfills_metadata_for_discovered_skill(self):
+        from tool_hub.services.skills import SkillService
+
+        with tempfile.TemporaryDirectory() as tmp:
+            hub_path = Path(tmp) / "hub"
+            source_root = Path(tmp) / "codex-skills"
+            target_root = Path(tmp) / "cursor-skills"
+            skill_dir = source_root / "alpha"
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            target_root.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text("---\nname: Alpha\ndescription: Backfill me\n---\n", encoding="utf-8")
+            config = {
+                "hub_path": str(hub_path),
+                "skills": {},
+                "agents": [
+                    {"id": "codex", "name": "Codex", "skills_dir": [str(source_root)]},
+                    {"id": "cursor", "name": "Cursor", "skills_dir": [str(target_root)]},
+                ],
+            }
+
+            result = SkillService().toggle_skill(config, "alpha", {"agent_id": "cursor"})
+
+            self.assertEqual(result["action"], "enabled")
+            from tool_hub.linking import is_managed_link
+            self.assertTrue(is_managed_link(target_root / "alpha"))
+            self.assertEqual(config["skills"]["alpha"]["path"], str(skill_dir))
+            self.assertEqual(config["skills"]["alpha"]["name"], "Alpha")
+            self.assertEqual(config["skills"]["alpha"]["description"], "Backfill me")
+            self.assertTrue(config["skills"]["alpha"]["source"])
+            self.assertEqual(config["skills"]["alpha"]["agents"], ["cursor"])
 
     def test_skill_service_gather_rejects_invalid_agent_and_outside_path(self):
         from tool_hub.services.skills import SkillService
@@ -323,7 +388,7 @@ class Phase7ServiceTests(unittest.TestCase):
                 "agents": [{"id": "codex", "name": "Codex", "skills_dir": [str(source_root)]}],
             }
 
-            with patch("tool_hub.services.skills.os.symlink", side_effect=OSError("boom")):
+            with patch("tool_hub.services.skills.create_link", side_effect=OSError("boom")):
                 result = SkillService().gather(
                     config,
                     {"skills": [{"name": "beta", "from": str(skill_dir), "agent_id": "codex"}]},
@@ -331,7 +396,8 @@ class Phase7ServiceTests(unittest.TestCase):
 
             self.assertEqual(result["results"][0]["status"], "error")
             self.assertTrue(skill_dir.is_dir())
-            self.assertFalse(skill_dir.is_symlink())
+            from tool_hub.linking import is_managed_link
+            self.assertFalse(is_managed_link(skill_dir))
             self.assertFalse((hub_path / "beta").exists())
             self.assertEqual(config["skills"], {})
 
@@ -398,7 +464,8 @@ class Phase7ServiceTests(unittest.TestCase):
             real_skill.mkdir(parents=True, exist_ok=True)
             source_root.mkdir(parents=True, exist_ok=True)
             (real_skill / "SKILL.md").write_text("---\nname: beta\ndescription: Gather\n---\n", encoding="utf-8")
-            link_skill.symlink_to(real_skill)
+            from tool_hub.linking import create_link
+            create_link(real_skill, link_skill)
             config = {
                 "hub_path": str(hub_path),
                 "skills": {},
@@ -411,7 +478,8 @@ class Phase7ServiceTests(unittest.TestCase):
             )
 
             self.assertEqual(result["results"][0]["status"], "error")
-            self.assertTrue(link_skill.is_symlink())
+            from tool_hub.linking import is_managed_link
+            self.assertTrue(is_managed_link(link_skill))
             self.assertTrue(real_skill.is_dir())
             self.assertFalse((hub_path / "beta").exists())
 

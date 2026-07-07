@@ -1,2 +1,2 @@
-"""Tool Hub core package."""
+"""AgentToolHub core package."""
 

@@ -5,16 +5,12 @@ from tool_hub.config_store import get_default_hub_path, load_config, save_config
 from tool_hub.presets import detect_agents
 
 
-DEFAULT_FEEDBACK_URL = "https://cdfc69-sandbox-sessionff6e20bc4f114f3b96-8082.agent.alibaba-inc.com"
-
-
 class ConfigService:
     def get_config(self, config):
         if config is None:
             return {"initialized": False}
         result = dict(config)
         result["initialized"] = True
-        result.setdefault("feedback_url", DEFAULT_FEEDBACK_URL)
         return result
 
     def put_config(self, body):

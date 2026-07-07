@@ -1,93 +1,117 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en-US">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tool Hub</title>
+<title>AgentToolHub</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --bg: #0f1117; --surface: #1a1d27; --surface2: #242836;
-  --border: #2e3348; --text: #e4e4e7; --text2: #9ca3af;
-  --primary: #6366f1; --primary-hover: #818cf8;
-  --green: #22c55e; --red: #ef4444; --yellow: #eab308;
+  --bg: #f6faf9; --surface: #ffffff; --surface2: #eef6f4; --surface3: #e3eeeb;
+  --border: #d5e3df; --border-strong: #afc5be; --text: #10201d; --text2: #5d6f69;
+  --primary: #0d9488; --primary-hover: #0f766e; --primary-soft: rgba(13,148,136,.14);
+  --green: #16a34a; --red: #dc2626; --yellow: #ca8a04;
   --radius: 8px;
 }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-button { cursor: pointer; border: none; border-radius: var(--radius); font-size: 14px; padding: 8px 16px; transition: all .15s; }
-input, textarea, select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius); padding: 8px 12px; font-size: 14px; outline: none; }
-input:focus, textarea:focus { border-color: var(--primary); }
+body { font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height:1.45; -webkit-font-smoothing: antialiased; }
+button { cursor: pointer; border: none; border-radius: var(--radius); font-size: 14px; min-height:36px; padding: 8px 14px; transition: background .15s, border-color .15s, color .15s, opacity .15s; }
+input, textarea, select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: var(--radius); padding: 8px 12px; min-height:36px; font-size: 14px; outline: none; }
+input:focus, textarea:focus, select:focus { border-color: var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
 textarea { resize: vertical; font-family: inherit; }
+.icon { width:16px;height:16px;display:inline-block;vertical-align:-3px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0; }
+.icon-label { display:inline-flex;align-items:center;gap:6px; }
+.icon-btn { min-width:32px;min-height:32px;padding:0;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer; }
+.icon-btn:hover { border-color:var(--border-strong);color:var(--text);background:var(--surface3); }
 
-.topbar { display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--border); }
-.topbar h1 { font-size: 20px; font-weight: 700; }
-.topbar h1 span { color: var(--primary); }
-.topbar-actions { display: flex; gap: 8px; }
+.topbar { display:grid;grid-template-columns:minmax(320px,auto) 1fr auto;gap:16px;align-items:center;padding:12px 24px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--border); }
+.topbar h1 { display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;white-space:nowrap; }
+.brand-mark { display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--primary);color:#fff;font-size:13px;font-weight:800;letter-spacing:.02em; }
+.brand-name { color:var(--text); }
+.brand-subtitle { font-size:12px;font-weight:500;color:var(--text2);margin-left:4px; }
+.topbar-actions { display: flex; gap: 8px; justify-content:flex-end; }
+.topbar-actions button { display:inline-flex;align-items:center;gap:6px; }
+.lang-control { display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text2); }
+.lang-control:hover { border-color:var(--border-strong);background:var(--surface3); }
+.lang-control:focus-within { outline:2px solid var(--primary);outline-offset:2px; }
+.lang-control .toolbar-select { min-width:74px;width:auto;min-height:auto;padding:0 2px;border:0;background:transparent;color:var(--text); }
+.lang-control .toolbar-select:focus { outline:0;border-color:transparent; }
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-hover); }
-.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
-.btn-outline:hover { border-color: var(--primary); color: var(--text); }
+.btn-outline { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); }
+.btn-outline:hover { border-color: var(--border-strong); color: var(--text); background:var(--surface3); }
 .btn-danger { background: var(--red); color: #fff; }
-.btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-sm { min-height:28px; padding: 4px 10px; font-size: 12px; }
 
-.main { display: flex; height: calc(100vh - 57px); }
+.main { display: flex; height: calc(100vh - 61px); }
 .sidebar { width: 240px; background: var(--surface); border-right: 1px solid var(--border); padding: 16px; overflow-y: auto; flex-shrink: 0; }
 .content { flex: 1; overflow: auto; padding: 20px; }
+.main.sidebar-collapsed .sidebar { width: 56px; padding: 12px 8px; }
+.main.sidebar-collapsed .sidebar-body,
+.main.sidebar-collapsed .sidebar-title { display: none; }
+.main.sidebar-collapsed .sidebar-head { justify-content: center; }
 
 .sidebar h3 { font-size: 12px; text-transform: uppercase; color: var(--text2); letter-spacing: 1px; margin-bottom: 12px; }
+.sidebar-head { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px; }
+.sidebar-head h3 { margin-bottom:0; }
+.sidebar-toggle { min-width:32px;min-height:28px;padding:0;border:1px solid var(--border);background:var(--surface2);color:var(--text2);border-radius:6px;font-size:12px;display:inline-flex;align-items:center;justify-content:center; }
+.sidebar-toggle:hover { border-color:var(--border-strong);color:var(--text);background:var(--surface3); }
 .filter-group { margin-bottom: 20px; }
 .filter-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; cursor: pointer; }
 .filter-item input[type="checkbox"] { accent-color: var(--primary); }
 .agent-list { list-style: none; }
-.agent-list li { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--border); }
-.btn-visibility { background:none;border:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:0.7;transition:opacity .15s; }
-.btn-visibility:hover { opacity:1; }
-.btn-visibility.hidden-agent { opacity:0.35; }
+.agent-list li { display: flex; align-items: center; justify-content: space-between; gap:8px; min-height:42px; padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--border); }
+.btn-visibility { background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:12px;cursor:pointer;padding:0;min-width:28px;min-height:28px;opacity:1;transition:background .15s, border-color .15s, color .15s;display:inline-flex;align-items:center;justify-content:center; }
+.btn-visibility:hover { background:var(--surface3);border-color:var(--border-strong); }
+.btn-visibility.hidden-agent { background:#f8fafc;color:#475569;border-color:#cbd5e1;opacity:1; }
 .agent-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
 
-.matrix-table { width: 100%; border-collapse: collapse; }
-.matrix-table th, .matrix-table td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--border); }
-.matrix-table th { background: #2d3250; color: #e4e4e7; font-size: 13px; font-weight: 600; position: sticky; top: 0; z-index: 1; transition: color .15s; }
-.matrix-table th[onclick]:hover { color: var(--primary); text-decoration: underline; }
-.matrix-table th:first-child, .matrix-table td:first-child { text-align: left; min-width: 200px; }
-.matrix-table tr:hover { background: var(--surface2); }
+.matrix-table { width: 100%; min-width:920px; border-collapse: separate; border-spacing:0; }
+.matrix-table th, .matrix-table td { padding: 12px 12px; text-align: center; border-bottom: 1px solid var(--border); }
+.matrix-table th { background: var(--surface3); color: var(--text); font-size: 12px; font-weight: 700; position: sticky; top: 0; z-index: 1; transition: color .15s; text-transform:none; }
+.matrix-table th[onclick]:hover { color: var(--primary); text-decoration: none; }
+.matrix-table th:first-child, .matrix-table td:first-child { text-align: left; min-width: 360px; max-width:520px; }
+.matrix-table tr { transition:background .15s; }
+.matrix-table tr:hover { background: rgba(13,148,136,.05); }
 .skill-name { font-weight: 500; }
-.skill-desc { font-size: 12px; color: var(--text2); margin-top: 2px; max-width: 600px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; line-height: 1.4; max-height: 2.8em; transition: max-height .2s ease; }
+.skill-desc { font-size: 12px; color: var(--text2); margin-top: 3px; max-width: 680px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; line-height: 1.45; max-height: 2.9em; transition: max-height .2s ease; }
 .skill-desc:hover { -webkit-line-clamp: unset; max-height: 200px; }
 .skill-source { font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
-.source-self { background: #166534; color: #86efac; }
-.source-third { background: #1e3a5f; color: #93c5fd; }
-.source-builtin { background: #3f3f46; color: #a1a1aa; }
+.source-self { background: #dcfce7; color: #166534; }
+.source-third { background: #dbeafe; color: #1d4ed8; }
+.source-builtin { background: #f1f5f9; color: #475569; }
 
-.cell-toggle { width: 36px; height: 36px; border-radius: var(--radius); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all .15s; font-size: 18px; }
-.cell-enabled { background: #166534; color: #22c55e; }
-.cell-enabled:hover { background: #14532d; }
-.cell-disabled { background: var(--surface2); color: var(--text2); }
-.cell-disabled:hover { background: var(--surface); color: var(--text); }
-.cell-local { background: #1e3a5f; color: #60a5fa; cursor: default; }
-.cell-unmanaged { background: var(--surface2); color: #3f3f46; cursor: pointer; }
+.cell-toggle { min-width: 34px; height: 34px; padding:0 8px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s, color .15s, border-color .15s; font-size: 13px; font-weight:700; border:1px solid transparent; }
+.cell-enabled { background: #dcfce7; color: #166534; border-color:#bbf7d0; }
+.cell-enabled:hover { background: #bbf7d0; }
+.cell-disabled { background: var(--surface2); color: var(--text2); border-color:var(--border); }
+.cell-disabled:hover { background: var(--surface3); color: var(--text); }
+.cell-local { background: #dbeafe; color: #1d4ed8; border-color:#bfdbfe; cursor: default; }
+.cell-unmanaged { background: #f8fafc; color: #94a3b8; border-color:var(--border); cursor: pointer; }
 
-.tag-unmanaged { background: #78350f; color: #fbbf24; font-size: 11px; padding: 1px 6px; border-radius: 4px; margin-left: 8px; }
-.toolbar-select { background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:6px 10px;font-size:13px;cursor:pointer; }
+.tag-unmanaged { background: #fef3c7; color: #92400e; font-size: 11px; padding: 1px 6px; border-radius: 4px; margin-left: 8px; }
+.toolbar-select { background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:6px 10px;min-height:36px;font-size:13px;cursor:pointer; }
 .toolbar-select:focus { border-color:var(--primary); }
 .dropdown-multi { position:relative; }
-.dropdown-panel { position:absolute;top:100%;right:0;margin-top:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px;min-width:180px;max-height:300px;overflow-y:auto;z-index:60;box-shadow:0 4px 12px rgba(0,0,0,.4); }
+.dropdown-panel { position:absolute;top:100%;right:0;margin-top:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px;min-width:180px;max-height:300px;overflow-y:auto;z-index:60;box-shadow:0 18px 40px rgba(15,23,42,.14); }
 .dropdown-panel label { display:flex;align-items:center;gap:6px;padding:4px 0;font-size:13px;cursor:pointer;white-space:nowrap; }
 .dropdown-panel input[type="checkbox"] { accent-color:var(--primary); }
-.btn-search-clear { position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text2);font-size:14px;cursor:pointer;padding:2px 4px; }
+.btn-search-clear { position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text2);font-size:14px;cursor:pointer;padding:0;min-width:26px;min-height:26px;display:inline-flex;align-items:center;justify-content:center; }
 .btn-search-clear:hover { color:var(--text); }
 .btn-copy-path { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 13px; padding: 1px 6px; cursor: pointer; border-radius: 4px; opacity: 0.7; transition: all .15s; }
 .btn-copy-path:hover { opacity: 1; background: var(--primary); color: #fff; border-color: var(--primary); }
-.content-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.content-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
 .content-header .search-box { width: 240px; }
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.32); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
 .modal h2 { font-size: 18px; margin-bottom: 16px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; }
 .form-group input, .form-group textarea { width: 100%; }
+.form-hint { font-size:12px;color:var(--text2);line-height:1.5;margin-top:6px; }
+.mcp-config-textarea { min-height:300px;font-family:monospace;font-size:13px;line-height:1.45; }
 .form-row { display: flex; gap: 8px; align-items: center; }
 .form-row input { flex: 1; }
 .agent-onboarding-card { border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-bottom:16px; background:var(--surface2); }
@@ -108,9 +132,9 @@ textarea { resize: vertical; font-family: inherit; }
 .log-entry { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); }
 .log-entry:last-child { border-bottom: none; }
 .log-action { font-size: 12px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
-.log-gather { background: #1e3a5f; color: #93c5fd; }
-.log-link { background: #166534; color: #86efac; }
-.log-unlink { background: #7f1d1d; color: #fca5a5; }
+.log-gather { background: #dbeafe; color: #1d4ed8; }
+.log-link { background: #dcfce7; color: #166534; }
+.log-unlink { background: #fee2e2; color: #991b1b; }
 .log-time { font-size: 12px; color: var(--text2); }
 .log-rolled-back { opacity: .4; text-decoration: line-through; }
 
@@ -119,10 +143,10 @@ textarea { resize: vertical; font-family: inherit; }
 .scan-new { color: var(--green); }
 .scan-stat { color: var(--text2); font-size: 13px; margin-bottom: 12px; }
 
-.toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 14px 28px; border-radius: var(--radius); color: #fff; font-size: 15px; z-index: 200; animation: toastFade .3s; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+.toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 14px 28px; border-radius: var(--radius); color: #fff; font-size: 15px; z-index: 200; animation: toastFade .3s; box-shadow: 0 18px 44px rgba(15,23,42,.22); }
 @keyframes toastFade { from { opacity: 0; transform: translate(-50%, -50%) scale(.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-.toast-success { background: #166534; }
-.toast-error { background: #7f1d1d; }
+.toast-success { background: #047857; }
+.toast-error { background: #b91c1c; }
 @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 .hidden { display: none !important; }
@@ -131,15 +155,18 @@ textarea { resize: vertical; font-family: inherit; }
 .seg-control { display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px;justify-self:center; }
 .seg-item { padding:7px 18px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:6px;transition:all .2s;user-select:none;display:flex;align-items:center;gap:6px; }
 .seg-item:hover { color:var(--text); }
-.seg-item.active { background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(99,102,241,0.3); }
+.seg-item.active { background:var(--primary);color:#fff;box-shadow:none; }
 .seg-item .seg-count { padding:1px 6px;border-radius:10px;font-size:11px; }
-.seg-item.active .seg-count { background:rgba(255,255,255,0.25); }
+.seg-item.active .seg-count { background:rgba(255,255,255,0.4); }
 .seg-item:not(.active) .seg-count { background:var(--surface2); }
 .type-badge { font-size:11px;padding:2px 6px;border-radius:4px;margin-left:8px; }
-.type-sse { background:#1e3a5f;color:#93c5fd; }
-.type-stdio { background:#166534;color:#86efac; }
-.type-http { background:#312e81;color:#a5b4fc; }
-.type-unknown { background:#3f3f46;color:#a1a1aa; }
+.type-sse { background:#dbeafe;color:#1d4ed8; }
+.type-stdio { background:#dcfce7;color:#166534; }
+.type-http { background:#e0e7ff;color:#3730a3; }
+.type-unknown { background:#f1f5f9;color:#475569; }
+.mcp-desc { font-size:12px;color:var(--text2);margin-top:3px;line-height:1.45; }
+.mcp-tools { font-size:12px;color:var(--text2);margin-top:3px;line-height:1.45; }
+.mcp-tools strong { color:var(--text);font-weight:600; }
 .status-dot { width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px; }
 .status-ok { background:var(--green); }
 .status-testing { background:var(--yellow); }
@@ -150,41 +177,82 @@ textarea { resize: vertical; font-family: inherit; }
 .status-label-testing { color:var(--yellow); }
 .status-label-error { color:var(--red); }
 .status-label-unknown { color:var(--text2);font-weight:400; }
-.action-cell { display:flex;gap:4px;justify-content:center; }
-.action-btn-mcp { width:28px;height:28px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer; }
+.action-cell { display:flex;gap:6px;justify-content:center; }
+.action-btn-mcp { min-width:30px;height:30px;padding:0;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer; }
 .action-btn-mcp:hover { border-color:var(--primary);color:var(--text); }
+@media (max-width: 900px) {
+  .topbar { grid-template-columns:1fr;gap:10px;padding:12px 16px; }
+  .topbar h1 { white-space:normal; }
+  .brand-subtitle { display:block;margin-left:0; }
+  .seg-control { justify-self:start; }
+  .topbar-actions { justify-content:flex-start;flex-wrap:wrap; }
+  .main { height:auto;min-height:calc(100vh - 140px); }
+  .sidebar { width:190px;padding:12px; }
+  .content { padding:14px; }
+  .content-header { flex-wrap:wrap; }
+  .content-header .search-box { width:min(100%, 280px); }
+}
+@media (max-width: 700px) {
+  .topbar h1 { display:grid;grid-template-columns:30px 1fr;align-items:center; }
+  .brand-subtitle { grid-column:2;font-size:12px; }
+  .brand-name { white-space:nowrap;font-size:18px; }
+  .main { flex-direction:column; }
+  .main.sidebar-collapsed .sidebar { width:100%;padding:12px; }
+  .sidebar { width:100%;border-right:none;border-bottom:1px solid var(--border); }
+  .content { width:100%;overflow:auto; }
+  .content-header > div:last-child { margin-left:0 !important;flex-wrap:wrap; }
+  .matrix-table { min-width:780px; }
+}
 </style>
 </head>
 <body>
 
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="icon-eye-off" viewBox="0 0 24 24"><path d="m2 2 20 20"/><path d="M10.6 10.6a3 3 0 0 0 4.2 4.2"/><path d="M9.9 4.3A10.6 10.6 0 0 1 12 4.1c6.5 0 10 7 10 7a18.2 18.2 0 0 1-3.2 4.3"/><path d="M6.6 6.6C3.7 8.5 2 12 2 12s3.5 7 10 7a9.8 9.8 0 0 0 4.1-.9"/></symbol>
+  <symbol id="icon-pencil" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
+  <symbol id="icon-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="icon-refresh-cw" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15 6.7"/><path d="M3 12A9 9 0 0 1 18 5.3"/><path d="M18 2v4h4"/><path d="M6 22v-4H2"/></symbol>
+  <symbol id="icon-list" viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="icon-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 8L9 4l-3 8H2"/></symbol>
+  <symbol id="icon-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 0 20"/><path d="M12 2a15.3 15.3 0 0 0 0 20"/></symbol>
+  <symbol id="icon-panel-left-close" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path d="m15 9-3 3 3 3"/></symbol>
+  <symbol id="icon-panel-left-open" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path d="m12 9 3 3-3 3"/></symbol>
+</svg>
+
 <!-- 顶栏 -->
 <div class="topbar">
-  <h1>⚡ <span>Tool</span> Hub <span style="font-size:13px;font-weight:400;color:var(--text2);margin-left:8px">找出你散落的 skill/mcp，挂载给其他 Agent 使用</span></h1>
+  <h1><span class="brand-mark">ATH</span><span class="brand-name">AgentToolHub</span><span class="brand-subtitle" data-i18n="appTagline">Manage Skills / MCP servers and attach them to agents</span></h1>
   <div class="seg-control">
-    <div class="seg-item active" id="seg-skills" onclick="showTab('matrix')">⚡ skill <span class="seg-count" id="skill-count-badge">0</span></div>
-    <div class="seg-item" id="seg-mcp" onclick="showTab('mcp')">🔌 MCP <span class="seg-count" id="mcp-count-badge">0</span></div>
+    <div class="seg-item active" id="seg-skills" onclick="showTab('matrix')">Skill <span class="seg-count" id="skill-count-badge">0</span></div>
+    <div class="seg-item" id="seg-mcp" onclick="showTab('mcp')">MCP <span class="seg-count" id="mcp-count-badge">0</span></div>
   </div>
   <div class="topbar-actions">
-    <button class="btn-outline" onclick="doScanSync()">🔄 扫描刷新</button>
-    <button class="btn-outline" onclick="showTab('logs')">📜 日志</button>
-    <button class="btn-outline" onclick="showFeedbackModal()">💬 反馈</button>
+    <span class="lang-control" title="Language" aria-label="Language"><svg class="icon" aria-hidden="true"><use href="#icon-globe"></use></svg><select id="lang-select" class="toolbar-select" onchange="setUiLang(this.value)" title="Language" aria-label="Language">
+        <option value="en-US">English</option>
+        <option value="zh-CN">中文</option>
+      </select></span>
+    <button id="scan-sync-btn" class="btn-outline" onclick="doScanSync()" title="Scan" aria-label="Scan"><span class="icon-label"><svg class="icon" aria-hidden="true"><use href="#icon-refresh-cw"></use></svg><span>Scan</span></span></button>
+    <button id="logs-btn" class="btn-outline" onclick="showTab('logs')" title="Logs" aria-label="Logs"><span class="icon-label"><svg class="icon" aria-hidden="true"><use href="#icon-list"></use></svg><span>Logs</span></span></button>
   </div>
 </div>
 
 <!-- 引导页 -->
 <div id="setup-page" class="setup-page hidden">
-  <h2>👋 欢迎使用 Tool Hub</h2>
-  <p>跨 Agent 应用的 Skill 统一管理台</p>
+  <h2 data-i18n="setupTitle">Welcome to AgentToolHub</h2>
+  <p data-i18n="setupSubtitle">A unified Skill console for multiple agent apps</p>
   <div class="setup-card">
     <div class="setup-step">
-      <h3>📁 设置中央仓库路径</h3>
+      <h3 data-i18n="setupHubPath">Set central hub path</h3>
       <div class="form-row">
         <input id="setup-hub-path" type="text" placeholder="~/tool-hub">
-        <button class="btn-outline" onclick="chooseFolder('setup-hub-path')">📂 浏览</button>
+        <button class="btn-outline" onclick="chooseFolder('setup-hub-path')" data-i18n="browse">Browse</button>
       </div>
     </div>
     <div style="text-align:center">
-      <button class="btn-primary" style="padding:12px 32px;font-size:16px" onclick="doSetup()">🚀 开始使用</button>
+      <button class="btn-primary" style="padding:12px 32px;font-size:16px" onclick="doSetup()" data-i18n="startUsing">Start</button>
     </div>
   </div>
 </div>
@@ -194,9 +262,14 @@ textarea { resize: vertical; font-family: inherit; }
   <!-- 侧边栏 -->
   <div class="sidebar">
     <div class="filter-group">
-      <h3>Agent 列表管理</h3>
-      <ul id="agent-list" class="agent-list"></ul>
-      <button class="btn-outline btn-sm" style="margin-top:8px;width:100%" onclick="showAddAgent()">+ 添加 Agent</button>
+      <div class="sidebar-head">
+        <h3 class="sidebar-title" data-i18n="agentListTitle">Agents</h3>
+        <button id="sidebar-toggle" class="sidebar-toggle" onclick="toggleSidebar()" title="Collapse sidebar" aria-label="Collapse sidebar"><svg class="icon" aria-hidden="true"><use href="#icon-panel-left-close"></use></svg></button>
+      </div>
+      <div class="sidebar-body">
+        <ul id="agent-list" class="agent-list"></ul>
+        <button class="btn-outline btn-sm" style="margin-top:8px;width:100%" onclick="showAddAgent()" data-i18n="addAgent">+ Add Agent</button>
+      </div>
     </div>
   </div>
 
@@ -206,20 +279,20 @@ textarea { resize: vertical; font-family: inherit; }
     <div id="tab-matrix">
       <div class="content-header">
         <div style="position:relative;display:inline-block">
-          <input id="search-input" class="search-box" type="text" placeholder="🔍 搜索 skill..." oninput="filterSkills(this.value)">
-          <button id="search-clear" class="btn-search-clear" onclick="clearSearch()" style="display:none">✕</button>
+          <input id="search-input" class="search-box" type="text" placeholder="Search skills..." data-i18n-placeholder="searchSkill" oninput="filterSkills(this.value)">
+          <button id="search-clear" class="btn-search-clear" onclick="clearSearch()" style="display:none" title="Clear search" aria-label="Clear search"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button>
         </div>
         <span id="skill-count" style="color:var(--text2);font-size:14px;white-space:nowrap"></span>
         <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
           <div class="dropdown-multi" id="source-dropdown">
-            <button class="toolbar-select" onclick="toggleSourcePanel()" id="source-btn">来源筛选 ▾</button>
+            <button class="toolbar-select" onclick="toggleSourcePanel()" id="source-btn">Sources ▾</button>
             <div class="dropdown-panel hidden" id="source-panel"></div>
           </div>
           <select id="sort-select" class="toolbar-select" onchange="changeSort(this.value)">
-            <option value="mtime">按修改时间</option>
-            <option value="name">按名称排序</option>
+            <option value="mtime" data-i18n="sortByMtime">Sort by modified time</option>
+            <option value="name" data-i18n="sortByName">Sort by name</option>
           </select>
-          <button class="btn-primary" onclick="showAddSkillModal()">+ 添加 Skill</button>
+          <button class="btn-primary" onclick="showAddSkillModal()" data-i18n="addSkill">+ Add Skill</button>
         </div>
       </div>
       <table class="matrix-table">
@@ -232,16 +305,16 @@ textarea { resize: vertical; font-family: inherit; }
     <div id="tab-mcp-view" class="hidden">
       <div class="content-header">
         <div style="position:relative;display:inline-block">
-          <input id="mcp-search" class="search-box" type="text" placeholder="🔍 搜索 MCP..." oninput="filterMcp(this.value)">
-          <button id="mcp-search-clear" class="btn-search-clear" onclick="clearMcpSearch()" style="display:none">✕</button>
+          <input id="mcp-search" class="search-box" type="text" placeholder="Search MCP..." data-i18n-placeholder="searchMcp" oninput="filterMcp(this.value)">
+          <button id="mcp-search-clear" class="btn-search-clear" onclick="clearMcpSearch()" style="display:none" title="Clear search" aria-label="Clear search"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button>
         </div>
         <span id="mcp-count" style="color:var(--text2);font-size:14px"></span>
         <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
           <select id="mcp-sort-select" class="toolbar-select" onchange="changeMcpSort(this.value)">
-            <option value="name">按名称排序</option>
-            <option value="type">按类型排序</option>
+            <option value="name" data-i18n="sortByName">Sort by name</option>
+            <option value="type" data-i18n="sortByType">Sort by type</option>
           </select>
-          <button class="btn-primary" onclick="showAddMcpModal()">+ 添加 MCP</button>
+          <button class="btn-primary" onclick="showAddMcpModal()" data-i18n="addMcp">+ Add MCP</button>
         </div>
       </div>
       <table class="matrix-table">
@@ -253,11 +326,11 @@ textarea { resize: vertical; font-family: inherit; }
     <!-- 日志视图 -->
     <div id="tab-logs" class="hidden">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <h2>操作日志</h2>
-        <button class="btn-outline" onclick="showTab('matrix')">✕ 关闭</button>
+        <h2 data-i18n="operationLogs">Operation Logs</h2>
+        <button class="btn-primary" onclick="showTab('matrix')" data-i18n="closeLogs">Close logs</button>
       </div>
       <div id="logs-list"></div>
-      <div id="logs-empty" class="hidden" style="text-align:center;color:var(--text2);padding:40px">暂无操作日志</div>
+      <div id="logs-empty" class="hidden" style="text-align:center;color:var(--text2);padding:40px" data-i18n="noLogs">No operation logs</div>
     </div>
   </div>
 </div>
@@ -265,13 +338,13 @@ textarea { resize: vertical; font-family: inherit; }
 <!-- 扫描同步弹窗 -->
 <div id="scan-modal" class="modal-overlay hidden">
   <div class="modal" style="position:relative">
-    <button class="btn-outline btn-sm" onclick="closeScanModal()" style="position:absolute;top:16px;right:16px;padding:4px 8px">✕</button>
-    <h2>🔍 扫描同步结果</h2>
+    <button class="icon-btn" onclick="closeScanModal()" title="Close" aria-label="Close" style="position:absolute;top:16px;right:16px"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button>
+    <h2 data-i18n="scanSyncResult">Scan sync result</h2>
     <div id="scan-stats" class="scan-stat"></div>
     <div id="scan-results"></div>
     <div class="modal-actions">
-      <button class="btn-outline" onclick="closeScanModal()">关闭</button>
-      <button id="btn-gather" class="btn-primary hidden" onclick="doGather()">确认归聚</button>
+      <button class="btn-outline" onclick="closeScanModal()" data-i18n="close">Close</button>
+      <button id="btn-gather" class="btn-primary hidden" onclick="doGather()" data-i18n="confirmGather">Gather selected</button>
     </div>
   </div>
 </div>
@@ -279,55 +352,42 @@ textarea { resize: vertical; font-family: inherit; }
 <!-- 悟空提示弹窗 -->
 <div id="wukong-modal" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
   <div class="modal" style="position:relative;max-width:480px">
-    <button class="btn-outline btn-sm" onclick="document.getElementById('wukong-modal').classList.add('hidden')" style="position:absolute;top:16px;right:16px;padding:4px 8px">✕</button>
-    <h2>⚠️ 悟空不支持</h2>
-    <p style="margin:16px 0;color:var(--text2)">悟空不支持连接自定义 skill，请直接复制 skill 路径粘贴到悟空里使用。</p>
+    <button class="icon-btn" onclick="document.getElementById('wukong-modal').classList.add('hidden')" title="Close" aria-label="Close" style="position:absolute;top:16px;right:16px"><svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg></button>
+    <h2 data-i18n="wukongUnsupportedTitle">Wukong unsupported</h2>
+    <p style="margin:16px 0;color:var(--text2)" data-i18n="wukongUnsupportedBody">Wukong does not support custom skill links. Copy the skill path and paste it into Wukong directly.</p>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
       <input id="wukong-path" readonly style="flex:1;font-size:13px;background:var(--bg);cursor:text" onclick="this.select()">
-      <button class="btn-primary btn-sm" onclick="copyPath(document.getElementById('wukong-path').value)">📋 复制</button>
+      <button class="btn-primary btn-sm" onclick="copyPath(document.getElementById('wukong-path').value)" data-i18n="copy">Copy</button>
     </div>
-    <div class="modal-actions"><button class="btn-outline" onclick="document.getElementById('wukong-modal').classList.add('hidden')">关闭</button></div>
-  </div>
-</div>
-
-<!-- 反馈弹窗 -->
-<div id="feedback-modal" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
-  <div class="modal" style="position:relative;max-width:520px">
-    <button class="btn-outline btn-sm" onclick="closeFeedbackModal()" style="position:absolute;top:16px;right:16px;padding:4px 8px">✕</button>
-    <h2>💬 反馈建议</h2>
-    <textarea id="feedback-text" rows="5" placeholder="说说你的想法、建议或遇到的问题…" style="width:100%;resize:vertical;font-size:14px;margin-top:12px"></textarea>
-    <div class="modal-actions">
-      <button class="btn-outline" onclick="closeFeedbackModal()">取消</button>
-      <button class="btn-primary" id="btn-send-feedback" onclick="sendFeedback()">发送反馈</button>
-    </div>
+    <div class="modal-actions"><button class="btn-outline" onclick="document.getElementById('wukong-modal').classList.add('hidden')" data-i18n="close">Close</button></div>
   </div>
 </div>
 
 <!-- Agent 编辑弹窗 -->
 <div id="agent-modal" class="modal-overlay hidden">
   <div class="modal">
-    <h2 id="agent-modal-title">添加 Agent</h2>
+    <h2 id="agent-modal-title">Add Agent</h2>
     <input type="hidden" id="agent-edit-id">
     <div id="agent-onboarding-section" class="agent-onboarding-card">
-      <h3>不知道怎么配？让 Agent 替你完成</h3>
-      <p>复制接入 Prompt，粘贴到目标 Agent 里。目标 Agent 会自动检测自己的 Skill / MCP 配置，并写入 Tool Hub。</p>
-      <button class="btn-primary btn-sm" onclick="copyAgentOnboardingPrompt()">📋 复制自助接入 Prompt</button>
+      <h3 data-i18n="agentOnboardingTitle">Not sure how to configure it?</h3>
+      <p data-i18n="agentOnboardingBody">Copy the onboarding prompt into the target agent. The agent will detect its Skill / MCP config and write it into AgentToolHub.</p>
+      <button class="btn-primary btn-sm" onclick="copyAgentOnboardingPrompt()" data-i18n="copyOnboardingPrompt">Copy onboarding prompt</button>
     </div>
     <div class="form-group">
-      <label>名称 <span style="color:var(--red)">*</span></label>
-      <input id="agent-name" type="text" placeholder="如: Cursor">
+      <label><span data-i18n="nameLabel">Name</span> <span style="color:var(--red)">*</span></label>
+      <input id="agent-name" type="text" placeholder="e.g. Cursor" data-i18n-placeholder="agentNamePlaceholder">
     </div>
     <div class="form-group">
-      <label>Skills 目录路径 <span style="color:var(--red)">*</span></label>
+      <label><span data-i18n="skillsDirLabel">Skills directory path</span> <span style="color:var(--red)">*</span></label>
       <div id="agent-dirs-list"></div>
-      <button class="btn-sm btn-outline" onclick="addDirRow()" style="margin-top:6px">＋ 添加路径</button>
+      <button class="btn-sm btn-outline" onclick="addDirRow()" style="margin-top:6px" data-i18n="addPath">+ Add path</button>
     </div>
-    <div class="form-group"><label>MCP 配置文件路径</label><div class="form-row"><input id="agent-mcp-path" type="text" placeholder="~/.claude/settings.json" style="flex:1"><button class="btn-outline btn-sm" onclick="chooseMcpConfigPath()" style="white-space:nowrap">📂</button></div></div>
-    <div class="form-group"><label>MCP 配置 Key</label><input id="agent-mcp-key" type="text" placeholder="mcpServers" value="mcpServers"></div>
-    <p style="font-size:11px;color:var(--text2);margin-top:4px;margin-bottom:12px">💡 不确定路径？可以问你的 Agent</p>
+    <div class="form-group"><label data-i18n="mcpConfigPathLabel">MCP config file path</label><div class="form-row"><input id="agent-mcp-path" type="text" placeholder="~/.claude/settings.json" style="flex:1"><button class="btn-outline btn-sm" onclick="chooseMcpConfigPath()" style="white-space:nowrap" data-i18n="browse">Browse</button></div></div>
+    <div class="form-group"><label data-i18n="mcpConfigKeyLabel">MCP config key</label><input id="agent-mcp-key" type="text" placeholder="mcpServers" value="mcpServers"></div>
+    <p style="font-size:11px;color:var(--text2);margin-top:4px;margin-bottom:12px" data-i18n="askAgentHint">Not sure about the path? Ask your agent.</p>
     <div class="modal-actions">
-      <button class="btn-outline" onclick="closeAgentModal()">取消</button>
-      <button class="btn-primary" onclick="saveAgent()">保存</button>
+      <button class="btn-outline" onclick="closeAgentModal()" data-i18n="cancel">Cancel</button>
+      <button class="btn-primary" onclick="saveAgent()" data-i18n="save">Save</button>
     </div>
   </div>
 </div>
@@ -335,25 +395,25 @@ textarea { resize: vertical; font-family: inherit; }
 <!-- MCP 添加/编辑弹窗 -->
 <div id="mcp-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeMcpModal()">
   <div class="modal">
-    <h2 id="mcp-modal-title">添加 MCP Server</h2>
-    <div class="form-group"><label>名称</label><input id="mcp-name" type="text" placeholder="如: netdisk"></div>
-    <div class="form-group"><label>类型</label><select id="mcp-type" onchange="toggleMcpFields()" style="width:100%"><option value="stdio">stdio (command)</option><option value="sse">sse (remote)</option><option value="streamableHttp">streamableHttp (remote)</option></select></div>
-    <div id="mcp-stdio-fields"><div class="form-group"><label>command</label><input id="mcp-command" type="text" placeholder="/usr/local/bin/node"></div><div class="form-group"><label>args (逗号分隔)</label><input id="mcp-args" type="text" placeholder="arg1, arg2"></div></div>
-    <div id="mcp-url-fields" class="hidden"><div class="form-group"><label>URL</label><input id="mcp-url" type="text" placeholder="https://..."></div></div>
-    <div class="form-group"><label>描述 (可选)</label><input id="mcp-desc" type="text" placeholder="简短描述"></div>
-    <div class="modal-actions"><button class="btn-outline" onclick="closeMcpModal()">取消</button><button class="btn-primary" onclick="submitMcp()">确定</button></div>
+    <h2 id="mcp-modal-title">Add MCP Server</h2>
+    <div class="form-group">
+      <label data-i18n="mcpPasteLabel">Paste MCP config JSON</label>
+      <textarea id="mcp-config-text" class="mcp-config-textarea" spellcheck="false" data-i18n-placeholder="mcpPastePlaceholder"></textarea>
+      <div class="form-hint" data-i18n="mcpPasteHint">Paste a JSON object containing mcpServers. The server name, command, args, env, url and headers will be parsed automatically.</div>
+    </div>
+    <div class="modal-actions"><button class="btn-outline" onclick="closeMcpModal()" data-i18n="cancel">Cancel</button><button class="btn-primary" onclick="submitMcp()" data-i18n="confirm">OK</button></div>
   </div>
 </div>
 
 <!-- Skill 上传弹窗 -->
 <div id="skill-upload-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeSkillUploadModal()">
   <div class="modal">
-    <h2>📤 添加 Skill</h2>
+    <h2 data-i18n="addSkill">+ Add Skill</h2>
     <div class="form-group">
-      <label>上传 .zip 文件</label>
+      <label data-i18n="uploadZipLabel">Upload .zip file</label>
       <div id="skill-drop-zone" style="border:2px dashed var(--border);border-radius:var(--radius);padding:40px;text-align:center;cursor:pointer;transition:all .2s" onclick="document.getElementById('skill-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--primary)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleSkillDrop(event)">
-        <div style="font-size:40px;margin-bottom:8px">📁</div>
-        <div style="color:var(--text2)">拖拽文件到这里，或点击选择</div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--text)">ZIP</div>
+        <div style="color:var(--text2)" data-i18n="dropZipHint">Drop a file here, or click to choose</div>
         <input id="skill-file-input" type="file" accept=".zip" style="display:none" onchange="handleSkillFileSelect(event)">
       </div>
       <div id="skill-file-name" style="margin-top:8px;color:var(--text2);font-size:13px"></div>
@@ -362,9 +422,9 @@ textarea { resize: vertical; font-family: inherit; }
       <div style="background:var(--surface2);border-radius:4px;height:8px;overflow:hidden">
         <div id="skill-upload-bar" style="background:var(--primary);height:100%;width:0%;transition:width .3s"></div>
       </div>
-      <div style="color:var(--text2);font-size:12px;margin-top:4px" id="skill-upload-status">上传中...</div>
+      <div style="color:var(--text2);font-size:12px;margin-top:4px" id="skill-upload-status" data-i18n="uploading">Uploading...</div>
     </div>
-    <div class="modal-actions"><button class="btn-outline" onclick="closeSkillUploadModal()">取消</button><button class="btn-primary" id="skill-upload-btn" onclick="uploadSkill()" disabled>上传</button></div>
+    <div class="modal-actions"><button class="btn-outline" onclick="closeSkillUploadModal()" data-i18n="cancel">Cancel</button><button class="btn-primary" id="skill-upload-btn" onclick="uploadSkill()" disabled data-i18n="upload">Upload</button></div>
   </div>
 </div>
 
@@ -380,6 +440,205 @@ let searchQuery = '';
 let scanResults = null;
 let currentTab = 'matrix';
 let pendingChanges = {}; // key: "skillId|agentId", value: "link"|"unlink"
+const UI_STATE_KEY = 'toolHubUiState:v1';
+let sidebarCollapsed = false;
+
+const I18N = {
+  'zh-CN': {
+    appTitle: 'AgentToolHub', appTagline: '管理散落的 Skill / MCP，并挂载给其他 Agent',
+    setupTitle: '欢迎使用 AgentToolHub', setupSubtitle: '跨 Agent 应用的 Skill 统一管理台', setupHubPath: '设置中央仓库路径', startUsing: '开始使用',
+    agentListTitle: 'Agent 列表管理', addAgent: '+ 添加 Agent', searchSkill: '搜索 skill...', sourceFilter: '来源筛选', sourceFilterCount: '来源 ({selected}/{total})', sortByMtime: '按修改时间', sortByName: '按名称排序', sortByType: '按类型排序', addSkill: '+ 添加 Skill',
+    searchMcp: '搜索 MCP...', addMcp: '+ 添加 MCP', operationLogs: '操作日志', closeLogs: '关闭日志', noLogs: '暂无操作日志', scanSyncResult: '扫描同步结果', confirmGather: '确认归聚',
+    wukongUnsupportedTitle: '悟空不支持', wukongUnsupportedBody: '悟空不支持连接自定义 skill，请直接复制 skill 路径粘贴到悟空里使用。',
+    agentOnboardingTitle: '不知道怎么配？让 Agent 替你完成', agentOnboardingBody: '复制接入 Prompt，粘贴到目标 Agent 里。目标 Agent 会自动检测自己的 Skill / MCP 配置，并写入 AgentToolHub。', copyOnboardingPrompt: '复制自助接入 Prompt',
+    nameLabel: '名称', agentNamePlaceholder: '如: Cursor', skillsDirLabel: 'Skills 目录路径', addPath: '＋ 添加路径', mcpConfigPathLabel: 'MCP 配置文件路径', mcpConfigKeyLabel: 'MCP 配置 Key', askAgentHint: '不确定路径？可以问你的 Agent',
+    typeLabel: '类型', argsCommaLabel: 'args (逗号分隔)', descriptionOptionalLabel: '描述 (可选)', shortDescriptionPlaceholder: '简短描述', mcpNamePlaceholder: '如: netdisk', mcpPasteLabel: '粘贴 MCP 配置 JSON', mcpPasteHint: '粘贴包含 mcpServers 的 JSON。名称、command、args、env、url 和 headers 会自动解析。', mcpPastePlaceholder: '{\n  "mcpServers": {\n    "hindsight": {\n      "command": "npx",\n      "args": [\n        "mcp-remote",\n        "https://api.example.com/mcp/your_id/"\n      ]\n    }\n  }\n}', mcpConfigRequired: '请粘贴 MCP 配置 JSON', importedMcp: '已导入 {count} 个 MCP', confirm: '确定', uploadZipLabel: '上传 .zip 文件', dropZipHint: '拖拽文件到这里，或点击选择', uploading: '上传中...', upload: '上传',
+    browse: '浏览', cancel: '取消', save: '保存', copy: '复制', close: '关闭',
+    scanRefresh: '扫描刷新', logs: '日志', collapseSidebar: '收起侧栏', expandSidebar: '展开侧栏',
+    clearSearch: '清空搜索', close: '关闭', copyPath: '复制路径', testConnection: '测试连通',
+    edit: '编辑', delete: '删除', deletePath: '删除此路径', showAgent: '显示 Agent', hideAgent: '隐藏 Agent',
+    all: '全选', userSelf: '用户自研', unknown: '未知', unmanaged: '未归聚', source: '源', actions: '操作',
+    available: '可用', testing: '测试中', unavailable: '不可用', untested: '未测试', toolsLabel: '工具',
+    sourceOwnerMcpTitle: '来源归属方 — 点击可归聚到 Hub', gatherThenEnableTitle: '点击归聚到 Hub 后启用', pendingEnable: '待保存：启用', pendingDisable: '待保存：禁用', clickDisable: '点击禁用', clickEnable: '点击启用', pendingStop: '待保存：停用', sourceOwnerStopTitle: '来源归属方 — 点击可停用', pendingRestore: '待保存：恢复启用', disabledRestoreTitle: '已停用 — 点击恢复启用', clickEnableText: '点击启用',
+    pendingUnsaved: '! 有 {count} 项{label}变更未保存', mcpCount: '共 {count} 个 MCP（已归聚 {hubCount}，未归聚 {agentCount}）', mcpSearchCount: '搜索到 {count} 个（共 {total} 个 | 已归聚 {hubCount}，未归聚 {agentCount}）', skillCount: '共 {count} 个 skill（已归聚 {managedCount}，未归聚 {unmanagedCount}）',
+    copiedPath: '已复制路径', copyFailedEmpty: '复制失败：路径为空', copyFailedManual: '复制失败：请手动复制',
+    folderPickerFailed: '无法打开目录选择器', filePickerFailed: '无法打开文件选择器', hubPathRequired: '请填写中央仓库路径', initDone: '初始化完成！',
+    sourceAgentNotFound: '找不到来源 Agent', gatheredMcp: '已归聚 {name} 到 Hub', gatherFailed: '归聚失败: {error}', unknownError: '未知错误', cancelMcpChanges: '已取消所有 MCP 变更', savingMcpChanges: '正在保存 {count} 项 MCP 变更...', saveDoneWithErrors: '保存完成，{count} 项失败', savedMcpChanges: '已保存 {count} 项 MCP 变更。请重启 Agent 应用以生效。', mcpTestOk: '{name} 连通正常', mcpTestFail: '{name} 失败: {detail}', deleted: '已删除 {name}', addDone: '已添加', updateDone: '已更新',
+    zipOnly: '只支持 .zip 文件', fileSelected: '已选择: {name} ({size} KB)', skillAdded: '{name} 已添加', skillUploadSuccess: 'Skill "{name}" 上传成功', uploadFailed: '上传失败', networkError: '网络错误: {message}',
+    cancelChanges: '已取消所有变更', savingChanges: '正在保存 {count} 项变更...', savedChanges: '已保存 {count} 项变更。请重启 Agent 应用或新开对话以生效。', scanning: '正在扫描刷新...', scanAllGood: '一切正常，无需操作', gatheredNewSkills: '归聚了 {count} 个新 skill：{names}', rebuiltLinks: '补建了 {count} 个链接', brokenLinks: '发现 {count} 个断链', rebuiltLn: '补建了 {count} 个 ln', syncDone: '同步完成', noNewSkills: '没有发现新的 skill', newSkillFound: '发现 {count} 个新 skill，勾选确认归聚：', noSkillSelected: '未选择任何 skill', gatheredSkills: '成功归聚 {count} 个 skill',
+    addAgentTitle: '添加 Agent', editAgentTitle: '编辑 Agent', dirPlaceholder: '如: ~/.cursor/skills', onboardingPromptFailed: '生成接入 Prompt 失败', onboardingPromptCopied: '已复制自助接入 Prompt，请粘贴到目标 Agent 中执行', nameRequired: '请填写名称', skillsDirRequired: '请填写至少一个 Skills 目录路径', agentUpdated: 'Agent 已更新', agentAdded: 'Agent 已添加',
+    batchUndo: '批量撤销', undo: '撤销', batchUndoConfirm: '确定要批量撤销这组操作吗？', undoConfirm: '确定要撤销这条操作吗？', batchUndoDone: '批量撤销成功', undoDone: '已撤销', deleteFailed: '删除失败',
+    wukongMcpUnsupported: '悟空不支持自定义 MCP 外挂，无法通过 AgentToolHub 分发。', wukongMcpWarnTitle: '悟空不支持自定义 MCP 外挂', wukongSkillWarnTitle: '悟空安装 skill 需云端审核，本地挂载无效', wukongSkillTip: '悟空安装 skill 需要云端审核，本地 symlink 无效'
+  },
+  'en-US': {
+    appTitle: 'AgentToolHub', appTagline: 'Manage Skills / MCP servers and attach them to agents',
+    setupTitle: 'Welcome to AgentToolHub', setupSubtitle: 'A unified Skill console for multiple agent apps', setupHubPath: 'Set central hub path', startUsing: 'Start',
+    agentListTitle: 'Agents', addAgent: '+ Add Agent', searchSkill: 'Search skills...', sourceFilter: 'Sources', sourceFilterCount: 'Sources ({selected}/{total})', sortByMtime: 'Sort by modified time', sortByName: 'Sort by name', sortByType: 'Sort by type', addSkill: '+ Add Skill',
+    searchMcp: 'Search MCP...', addMcp: '+ Add MCP', operationLogs: 'Operation Logs', closeLogs: 'Close logs', noLogs: 'No operation logs', scanSyncResult: 'Scan sync result', confirmGather: 'Gather selected',
+    wukongUnsupportedTitle: 'Wukong unsupported', wukongUnsupportedBody: 'Wukong does not support custom skill links. Copy the skill path and paste it into Wukong directly.',
+    agentOnboardingTitle: 'Not sure how to configure it?', agentOnboardingBody: 'Copy the onboarding prompt into the target agent. The agent will detect its Skill / MCP config and write it into AgentToolHub.', copyOnboardingPrompt: 'Copy onboarding prompt',
+    nameLabel: 'Name', agentNamePlaceholder: 'e.g. Cursor', skillsDirLabel: 'Skills directory path', addPath: '+ Add path', mcpConfigPathLabel: 'MCP config file path', mcpConfigKeyLabel: 'MCP config key', askAgentHint: 'Not sure about the path? Ask your agent.',
+    typeLabel: 'Type', argsCommaLabel: 'args (comma-separated)', descriptionOptionalLabel: 'Description (optional)', shortDescriptionPlaceholder: 'Short description', mcpNamePlaceholder: 'e.g. netdisk', mcpPasteLabel: 'Paste MCP config JSON', mcpPasteHint: 'Paste a JSON object containing mcpServers. The server name, command, args, env, url and headers will be parsed automatically.', mcpPastePlaceholder: '{\n  "mcpServers": {\n    "hindsight": {\n      "command": "npx",\n      "args": [\n        "mcp-remote",\n        "https://api.example.com/mcp/your_id/"\n      ]\n    }\n  }\n}', mcpConfigRequired: 'Paste MCP config JSON', importedMcp: 'Imported {count} MCP servers', confirm: 'OK', uploadZipLabel: 'Upload .zip file', dropZipHint: 'Drop a file here, or click to choose', uploading: 'Uploading...', upload: 'Upload',
+    browse: 'Browse', cancel: 'Cancel', save: 'Save', copy: 'Copy', close: 'Close',
+    scanRefresh: 'Scan', logs: 'Logs', collapseSidebar: 'Collapse sidebar', expandSidebar: 'Expand sidebar',
+    clearSearch: 'Clear search', close: 'Close', copyPath: 'Copy path', testConnection: 'Test connection',
+    edit: 'Edit', delete: 'Delete', deletePath: 'Remove this path', showAgent: 'Show agent', hideAgent: 'Hide agent',
+    all: 'Select all', userSelf: 'User-owned', unknown: 'Unknown', unmanaged: 'Ungathered', source: 'Source', actions: 'Actions',
+    available: 'Available', testing: 'Testing', unavailable: 'Unavailable', untested: 'Not tested', toolsLabel: 'Tools',
+    sourceOwnerMcpTitle: 'Source owner — click to gather into Hub', gatherThenEnableTitle: 'Gather into Hub before enabling', pendingEnable: 'Pending: enable', pendingDisable: 'Pending: disable', clickDisable: 'Click to disable', clickEnable: 'Click to enable', pendingStop: 'Pending: stop', sourceOwnerStopTitle: 'Source owner — click to stop', pendingRestore: 'Pending: restore', disabledRestoreTitle: 'Disabled — click to restore', clickEnableText: 'Enable',
+    pendingUnsaved: '! {count} pending {label} changes', mcpCount: '{count} MCP servers ({hubCount} gathered, {agentCount} ungathered)', mcpSearchCount: '{count} found ({total} total | {hubCount} gathered, {agentCount} ungathered)', skillCount: '{count} skills ({managedCount} gathered, {unmanagedCount} ungathered)',
+    copiedPath: 'Path copied', copyFailedEmpty: 'Copy failed: path is empty', copyFailedManual: 'Copy failed: copy manually',
+    folderPickerFailed: 'Could not open folder picker', filePickerFailed: 'Could not open file picker', hubPathRequired: 'Enter the central hub path', initDone: 'Initialized.',
+    sourceAgentNotFound: 'Source agent not found', gatheredMcp: 'Gathered {name} into Hub', gatherFailed: 'Gather failed: {error}', unknownError: 'Unknown error', cancelMcpChanges: 'Canceled all MCP changes', savingMcpChanges: 'Saving {count} MCP changes...', saveDoneWithErrors: 'Saved with {count} failures', savedMcpChanges: 'Saved {count} MCP changes. Restart agent apps to apply.', mcpTestOk: '{name} is reachable', mcpTestFail: '{name} failed: {detail}', deleted: 'Deleted {name}', addDone: 'Added', updateDone: 'Updated',
+    zipOnly: 'Only .zip files are supported', fileSelected: 'Selected: {name} ({size} KB)', skillAdded: '{name} added', skillUploadSuccess: 'Skill "{name}" uploaded', uploadFailed: 'Upload failed', networkError: 'Network error: {message}',
+    cancelChanges: 'Canceled all changes', savingChanges: 'Saving {count} changes...', savedChanges: 'Saved {count} changes. Restart agent apps or start a new chat to apply.', scanning: 'Scanning...', scanAllGood: 'Everything is OK. No action needed.', gatheredNewSkills: 'Gathered {count} new skills: {names}', rebuiltLinks: 'Rebuilt {count} links', brokenLinks: 'Found {count} broken links', rebuiltLn: 'Rebuilt {count} ln links', syncDone: 'Sync complete', noNewSkills: 'No new skills found', newSkillFound: 'Found {count} new skills. Select skills to gather:', noSkillSelected: 'No skill selected', gatheredSkills: 'Gathered {count} skills',
+    addAgentTitle: 'Add Agent', editAgentTitle: 'Edit Agent', dirPlaceholder: 'e.g. ~/.cursor/skills', onboardingPromptFailed: 'Failed to generate onboarding prompt', onboardingPromptCopied: 'Onboarding prompt copied. Paste it into the target agent.', nameRequired: 'Enter a name', skillsDirRequired: 'Enter at least one Skills directory path', agentUpdated: 'Agent updated', agentAdded: 'Agent added',
+    batchUndo: 'Undo batch', undo: 'Undo', batchUndoConfirm: 'Undo this batch?', undoConfirm: 'Undo this operation?', batchUndoDone: 'Batch undone', undoDone: 'Undone', deleteFailed: 'Delete failed',
+    wukongMcpUnsupported: 'Wukong does not support custom MCP attachments, so AgentToolHub cannot distribute them.', wukongMcpWarnTitle: 'Wukong does not support custom MCP attachments', wukongSkillWarnTitle: 'Wukong skill installation requires cloud review. Local links do not work.', wukongSkillTip: 'Wukong skill installation requires cloud review. Local symlinks do not work.'
+  }
+};
+
+function getUiLang() {
+  const saved = localStorage.getItem('agent-tool-hub-lang') || localStorage.getItem('agent-tool-dock-lang') || localStorage.getItem('tool-hub-lang') || '';
+  const lang = saved || navigator.language || document.documentElement.lang || 'en-US';
+  return lang.toLowerCase().startsWith('en') ? 'en-US' : 'zh-CN';
+}
+
+function t(key, vars = {}) {
+  const lang = getUiLang();
+  const raw = (I18N[lang] && I18N[lang][key]) || I18N['en-US'][key] || I18N['zh-CN'][key] || key;
+  return String(raw).replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? '');
+}
+
+function label(key) {
+  return t(key);
+}
+
+function setUiLang(lang) {
+  const next = String(lang || '').toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US';
+  localStorage.setItem('agent-tool-hub-lang', next);
+  applyI18n();
+  if (agents.length) renderAgentList();
+  if (skills.length) { buildSourceDropdown(); renderMatrix(); }
+  if (mcpData && Array.isArray(mcpData.mcps)) renderMcpMatrix();
+  if (currentTab === 'logs') loadLogs();
+}
+
+function applyI18n() {
+  const lang = getUiLang();
+  document.documentElement.lang = lang;
+  document.title = t('appTitle');
+  const langSelect = document.getElementById('lang-select');
+  if (langSelect) langSelect.value = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+  applyStaticIconLabels();
+  applySidebarState();
+  updateSourceBtnLabel();
+}
+
+function icon(name) {
+  return `<svg class="icon" aria-hidden="true"><use href="#icon-${name}"></use></svg>`;
+}
+
+function iconText(name, text) {
+  return `<span class="icon-label">${icon(name)}<span>${text}</span></span>`;
+}
+
+function htmlAttr(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function jsArg(value) {
+  return JSON.stringify(String(value ?? ''));
+}
+
+function iconButton(iconName, labelKey, onClick, extraClass = 'action-btn-mcp') {
+  const text = label(labelKey);
+  return `<button type="button" class="${extraClass}" title="${htmlAttr(text)}" aria-label="${htmlAttr(text)}" onclick="${htmlAttr(onClick)}">${icon(iconName)}</button>`;
+}
+
+function readUiState() {
+  try {
+    return JSON.parse(localStorage.getItem(UI_STATE_KEY) || '{}');
+  } catch (e) {
+    return {};
+  }
+}
+
+function writeUiState(patch) {
+  try {
+    const next = { ...readUiState(), ...patch };
+    localStorage.setItem(UI_STATE_KEY, JSON.stringify(next));
+  } catch (e) {
+    // 缓存失败不应影响页面操作。
+  }
+}
+
+function restoreUiState() {
+  const state = readUiState();
+  if (Array.isArray(state.hiddenAgents)) hiddenAgents = new Set(state.hiddenAgents);
+  if (state.selectedSources && typeof state.selectedSources === 'object') selectedSources = state.selectedSources;
+  if (state.currentSort === 'mtime' || state.currentSort === 'name') currentSort = state.currentSort;
+  if (state.mcpSortBy === 'name' || state.mcpSortBy === 'type') mcpSortBy = state.mcpSortBy;
+  sidebarCollapsed = state.sidebarCollapsed === true;
+  applySidebarState();
+  const sortSelect = document.getElementById('sort-select');
+  if (sortSelect) sortSelect.value = currentSort;
+  const mcpSortSelect = document.getElementById('mcp-sort-select');
+  if (mcpSortSelect) mcpSortSelect.value = mcpSortBy;
+}
+
+function applySidebarState() {
+  const main = document.getElementById('main-page');
+  const toggle = document.getElementById('sidebar-toggle');
+  if (!main) return;
+  main.classList.toggle('sidebar-collapsed', sidebarCollapsed);
+  if (toggle) {
+    const key = sidebarCollapsed ? 'expandSidebar' : 'collapseSidebar';
+    const iconName = sidebarCollapsed ? 'panel-left-open' : 'panel-left-close';
+    const text = label(key);
+    toggle.innerHTML = icon(iconName);
+    toggle.title = text;
+    toggle.setAttribute('aria-label', text);
+  }
+}
+
+function applyStaticIconLabels() {
+  const scanBtn = document.getElementById('scan-sync-btn');
+  if (scanBtn) {
+    const text = label('scanRefresh');
+    scanBtn.innerHTML = iconText('refresh-cw', text);
+    scanBtn.title = text;
+    scanBtn.setAttribute('aria-label', text);
+  }
+  const logsBtn = document.getElementById('logs-btn');
+  if (logsBtn) {
+    const text = label('logs');
+    logsBtn.innerHTML = iconText('list', text);
+    logsBtn.title = text;
+    logsBtn.setAttribute('aria-label', text);
+  }
+  ['search-clear', 'mcp-search-clear'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const text = label('clearSearch');
+    btn.innerHTML = icon('x');
+    btn.title = text;
+    btn.setAttribute('aria-label', text);
+  });
+}
+
+function toggleSidebar() {
+  sidebarCollapsed = !sidebarCollapsed;
+  applySidebarState();
+  writeUiState({ sidebarCollapsed });
+}
 
 // ============================================================
 // API
@@ -395,6 +654,7 @@ async function api(path, method = 'GET', body = null) {
 // Init
 // ============================================================
 async function init() {
+  applyI18n();
   config = await api('/config');
   if (!config || !config.hub_path || config.initialized === false) {
     showSetupPage();
@@ -422,15 +682,15 @@ async function chooseFolder(inputId) {
       document.getElementById(inputId).value = result.path;
     }
   } catch (e) {
-    toast('无法打开目录选择器', 'error');
+    toast(t('folderPickerFailed'), 'error');
   }
 }
 
 async function doSetup() {
   const hubPath = document.getElementById('setup-hub-path').value.trim();
-  if (!hubPath) { toast('请填写中央仓库路径', 'error'); return; }
+  if (!hubPath) { toast(t('hubPathRequired'), 'error'); return; }
   await api('/config', 'PUT', { hub_path: hubPath, global_exclude: [], agents: {}, skills: {} });
-  toast('初始化完成！');
+  toast(t('initDone'));
   await init();
 }
 
@@ -441,12 +701,10 @@ async function showMainPage() {
   document.getElementById('setup-page').classList.add('hidden');
   document.getElementById('main-page').classList.remove('hidden');
   await Promise.all([loadSkills(), loadAgents(), loadMcp()]);
+  restoreUiState();
   buildSourceDropdown();
   renderAgentList();
   renderMatrix();
-
-  // 启动后静默回传环境信息
-  sendSilentFeedback('启动加载完成');
 
   // 页面加载后自动扫描所有 MCP 可用性（后台执行，不阻塞）
   autoTestAllMcp();
@@ -477,8 +735,11 @@ function buildSourceDropdown() {
     if (b === '自研') return 1;
     return a.localeCompare(b);
   });
-  // 初始化：全部勾选
+  const nextSelectedSources = {};
   sorted.forEach(s => { if (!(s in selectedSources)) selectedSources[s] = true; });
+  sorted.forEach(s => { nextSelectedSources[s] = selectedSources[s]; });
+  selectedSources = nextSelectedSources;
+  writeUiState({ selectedSources });
   renderSourcePanel(sorted);
   updateSourceBtnLabel();
 }
@@ -490,11 +751,17 @@ function renderSourcePanel(sortedSources) {
   }
   const allChecked = Object.values(selectedSources).every(v => v);
   panel.innerHTML =
-    `<label><input type="checkbox" ${allChecked ? 'checked' : ''} onchange="toggleAllSources(this.checked)"> <strong>全选</strong></label>` +
+    `<label><input type="checkbox" ${allChecked ? 'checked' : ''} onchange="toggleAllSources(this.checked)"> <strong>${t('all')}</strong></label>` +
     sortedSources.map(s => {
-      const display = s === '自研' ? '用户自研' : s;
-      return `<label><input type="checkbox" ${selectedSources[s] ? 'checked' : ''} onchange="toggleSourceItem('${s}',this.checked)"> ${display}</label>`;
+      const display = sourceDisplayName(s);
+      return `<label><input type="checkbox" ${selectedSources[s] ? 'checked' : ''} onchange="toggleSourceItem(${htmlAttr(jsArg(s))},this.checked)"> ${htmlAttr(display)}</label>`;
     }).join('');
+}
+
+function sourceDisplayName(source) {
+  if (!source || source === '未知') return t('unknown');
+  if (source === '自研') return t('userSelf');
+  return source;
 }
 
 function toggleSourcePanel() {
@@ -503,6 +770,7 @@ function toggleSourcePanel() {
 
 function toggleSourceItem(source, checked) {
   selectedSources[source] = checked;
+  writeUiState({ selectedSources });
   updateSourceBtnLabel();
   renderSourcePanel();
   renderMatrix();
@@ -510,6 +778,7 @@ function toggleSourceItem(source, checked) {
 
 function toggleAllSources(checked) {
   Object.keys(selectedSources).forEach(s => { selectedSources[s] = checked; });
+  writeUiState({ selectedSources });
   updateSourceBtnLabel();
   renderSourcePanel();
   renderMatrix();
@@ -519,7 +788,7 @@ function updateSourceBtnLabel() {
   const total = Object.keys(selectedSources).length;
   const selected = Object.values(selectedSources).filter(v => v).length;
   const btn = document.getElementById('source-btn');
-  btn.textContent = selected === total ? '来源筛选 ▾' : `来源 (${selected}/${total}) ▾`;
+  btn.textContent = selected === total ? `${t('sourceFilter')} ▾` : `${t('sourceFilterCount', { selected, total })} ▾`;
 }
 
 let sortByAgent = ''; // 点击 agent 列头排序
@@ -527,6 +796,7 @@ let sortByAgent = ''; // 点击 agent 列头排序
 function changeSort(value) {
   currentSort = value;
   sortByAgent = ''; // 切换排序方式时清空 agent 排序
+  writeUiState({ currentSort });
   renderMatrix();
 }
 
@@ -595,9 +865,12 @@ async function autoTestAllMcp() {
       renderMcpMatrix();
     }
     try {
-      const result = await (await fetch(`/api/mcp/${mcp.name}/test`, { method: 'POST' })).json();
+      const result = await (await fetch(`/api/mcp/${mcp.name}/test`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({fetch_tools:true}) })).json();
       const testedTarget = mcpData.mcps.find(item => item.name === mcp.name);
-      if (testedTarget) testedTarget._connectivity = result.status;
+      if (testedTarget) {
+        testedTarget._connectivity = result.status;
+        if (Array.isArray(result.tools)) testedTarget.tools = result.tools;
+      }
       renderMcpMatrix();
     } catch (error) {
       const failedTarget = mcpData.mcps.find(item => item.name === mcp.name);
@@ -624,11 +897,26 @@ function renderGenericPendingBar(barId, count, label, containerId, cancelFn, sav
     const container = document.getElementById(containerId);
     container.insertBefore(bar, container.firstChild);
   }
-  bar.innerHTML = `<span style="color:var(--yellow)">⚠️ 有 ${count} 项${label}变更未保存</span>
+  bar.innerHTML = `<span style="color:var(--yellow)">${t('pendingUnsaved', { count, label })}</span>
     <div style="display:flex;gap:8px">
-      <button class="btn-outline" onclick="(${cancelFn.name})()">取消</button>
-      <button class="btn-primary" onclick="(${saveFn.name})()">💾 保存</button>
+      <button class="btn-outline" onclick="(${cancelFn.name})()">${t('cancel')}</button>
+      <button class="btn-primary" onclick="(${saveFn.name})()">${t('save')}</button>
     </div>`;
+}
+
+function renderMcpInfo(mcp) {
+  const parts = [];
+  if (mcp.description) {
+    parts.push(`<div class="mcp-desc">${htmlAttr(mcp.description)}</div>`);
+  }
+  const tools = Array.isArray(mcp.tools) ? mcp.tools : [];
+  if (tools.length) {
+    const names = tools.map(tool => tool && tool.name).filter(Boolean);
+    const preview = names.slice(0, 8).map(htmlAttr).join(', ');
+    const suffix = names.length > 8 ? ' ...' : '';
+    parts.push(`<div class="mcp-tools"><strong>${t('toolsLabel')} (${names.length})</strong>: ${preview}${suffix}</div>`);
+  }
+  return parts.join('');
 }
 
 function renderMcpMatrix() {
@@ -636,7 +924,11 @@ function renderMcpMatrix() {
   const mcpAgents = (allMcpAgents || []).filter(a => !hiddenAgents.has(a.id));
   // 搜索过滤
   const filtered = mcpSearchQuery
-    ? rawMcps.filter(m => m.name.toLowerCase().includes(mcpSearchQuery.toLowerCase()) || (m.description||'').toLowerCase().includes(mcpSearchQuery.toLowerCase()))
+    ? rawMcps.filter(m => {
+        const q = mcpSearchQuery.toLowerCase();
+        const toolText = Array.isArray(m.tools) ? m.tools.map(tool => tool.name || '').join(' ') : '';
+        return m.name.toLowerCase().includes(q) || (m.description||'').toLowerCase().includes(q) || toolText.toLowerCase().includes(q);
+      })
     : rawMcps;
   // 排序
   let mcps;
@@ -655,64 +947,69 @@ function renderMcpMatrix() {
   }
   const hubCount = rawMcps.filter(m => m.source === 'hub').length;
   const agentCount = rawMcps.filter(m => m.source === 'agent').length;
-  const countPrefix = mcpSearchQuery ? `搜索到 ${mcps.length} 个，` : `共 ${mcps.length} 个 MCP`;
-  document.getElementById('mcp-count').textContent = mcpSearchQuery ? `${countPrefix}（共 ${rawMcps.length} 个 | 已归聚 ${hubCount}，未归聚 ${agentCount}）` : `共 ${mcps.length} 个 MCP（已归聚 ${hubCount}，未归聚 ${agentCount}）`;
+  document.getElementById('mcp-count').textContent = mcpSearchQuery
+    ? t('mcpSearchCount', { count: mcps.length, total: rawMcps.length, hubCount, agentCount })
+    : t('mcpCount', { count: mcps.length, hubCount, agentCount });
   document.getElementById('mcp-count-badge').textContent = rawMcps.length;
   const head = document.getElementById('mcp-matrix-head');
   head.innerHTML = `<tr><th style="text-align:left">MCP Server</th>${mcpAgents.map(a => {
     const active = mcpSortByAgent === a.id ? ' style="color:var(--primary);cursor:pointer;text-decoration:underline"' : ' style="cursor:pointer"';
-    const wukongWarn = a.id === 'wukong' ? ' <span style="font-size:10px;color:var(--yellow)" title="悟空不支持自定义 MCP 外挂">⚠️</span>' : '';
+    const wukongWarn = a.id === 'wukong' ? ` <span style="font-size:10px;color:var(--yellow)" title="${htmlAttr(t('wukongMcpWarnTitle'))}">!</span>` : '';
     return `<th onclick="mcpSortByAgentClick('${a.id}')"${active}>${a.name}${wukongWarn}</th>`;
-  }).join('')}<th>操作</th></tr>`;
+  }).join('')}<th>${t('actions')}</th></tr>`;
   const body = document.getElementById('mcp-matrix-body');
   body.innerHTML = mcps.map(mcp => {
     const typeCls = mcp.type === 'stdio' ? 'type-stdio' : mcp.type === 'sse' ? 'type-sse' : (mcp.type === 'streamableHttp' ? 'type-http' : 'type-unknown');
     const connectivityStatus = mcp._connectivity || 'unknown';
     const stCls = connectivityStatus === 'ok' ? 'status-ok' : (connectivityStatus === 'testing' ? 'status-testing' : (connectivityStatus === 'error' ? 'status-error' : 'status-unknown'));
-    const statusText = connectivityStatus === 'ok' ? '可用' : (connectivityStatus === 'testing' ? '测试中' : (connectivityStatus === 'error' ? '不可用' : '未测试'));
+    const statusText = connectivityStatus === 'ok' ? t('available') : (connectivityStatus === 'testing' ? t('testing') : (connectivityStatus === 'error' ? t('unavailable') : t('untested')));
     const statusLabelCls = connectivityStatus === 'ok' ? 'status-label-ok' : (connectivityStatus === 'testing' ? 'status-label-testing' : (connectivityStatus === 'error' ? 'status-label-error' : 'status-label-unknown'));
     const isUnmanaged = mcp.source === 'agent';
     const sourceBadge = isUnmanaged
-      ? `<span class="type-badge" style="background:#78350f;color:#fbbf24;margin-left:6px" title="尚未归聚到 Hub，来源: ${(mcp.source_agents||[]).join(', ')}">📦 未归聚</span>`
+      ? `<span class="type-badge" style="background:#fef3c7;color:#92400e;margin-left:6px" title="${htmlAttr(t('unmanaged'))}: ${(mcp.source_agents||[]).join(', ')}">${t('unmanaged')}</span>`
       : '';
     const cells = mcpAgents.map(a => {
       const on = mcp.agent_status && mcp.agent_status[a.id];
       if (isUnmanaged) {
         const isSource = (mcp.source_agents || []).includes(a.id);
         if (isSource) {
-          return `<td><span class="cell-toggle cell-local" style="cursor:pointer" onclick="toggleUnmanagedMcp('${mcp.name}','${a.id}')" title="来源归属方 — 点击可归聚到Hub">🏠</span></td>`;
+          return `<td><span class="cell-toggle cell-local" style="cursor:pointer" onclick="toggleUnmanagedMcp('${mcp.name}','${a.id}')" title="${htmlAttr(t('sourceOwnerMcpTitle'))}">${t('source')}</span></td>`;
         }
-        return `<td><span class="cell-toggle cell-unmanaged" style="cursor:pointer" onclick="toggleUnmanagedMcp('${mcp.name}','${a.id}')" title="点击归聚到Hub后启用">−</span></td>`;
+        return `<td><span class="cell-toggle cell-unmanaged" style="cursor:pointer" onclick="toggleUnmanagedMcp('${mcp.name}','${a.id}')" title="${htmlAttr(t('gatherThenEnableTitle'))}">−</span></td>`;
       }
       const pending = getPendingMcpState(mcp.name, a.id);
       const pendingMark = pending ? ' style="outline:2px dashed var(--yellow);outline-offset:-2px;cursor:pointer"' : ' style="cursor:pointer"';
       let display, cls, title;
       if (pending === 'enable') {
-        display = '✓'; cls = 'cell-enabled'; title = '待保存：启用';
+        display = '✓'; cls = 'cell-enabled'; title = t('pendingEnable');
       } else if (pending === 'disable') {
-        display = '−'; cls = 'cell-disabled'; title = '待保存：禁用';
+        display = '−'; cls = 'cell-disabled'; title = t('pendingDisable');
       } else {
-        display = on ? '✓' : '−'; cls = on ? 'cell-enabled' : 'cell-disabled'; title = on ? '点击禁用' : '点击启用';
+        display = on ? '✓' : '−'; cls = on ? 'cell-enabled' : 'cell-disabled'; title = on ? t('clickDisable') : t('clickEnable');
       }
       return `<td><span class="cell-toggle ${cls}" onclick="toggleMcpAgent('${mcp.name}','${a.id}')"${pendingMark} title="${title}">${display}</span></td>`;
     }).join('');
-    const actions = `<div class="action-cell"><span class="action-btn-mcp" title="测试连通" onclick="testMcp('${mcp.name}')">↻</span><span class="action-btn-mcp" title="编辑" onclick="showEditMcpModal('${mcp.name}')">✏️</span><span class="action-btn-mcp" title="删除" onclick="deleteMcp('${mcp.name}')">🗑️</span></div>`;
-    return `<tr><td><div style="display:flex;align-items:center"><span class="status-dot ${stCls}"></span><strong>${mcp.name}</strong><span class="status-label ${statusLabelCls}">${statusText}</span><span class="type-badge ${typeCls}">${mcp.type}</span>${sourceBadge}</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${mcp.description||''}</div></td>${cells}<td>${actions}</td></tr>`;
+    const actions = `<div class="action-cell">`
+      + iconButton('activity', 'testConnection', 'testMcp(' + jsArg(mcp.name) + ')')
+      + iconButton('pencil', 'edit', 'showEditMcpModal(' + jsArg(mcp.name) + ')')
+      + iconButton('trash', 'delete', 'deleteMcp(' + jsArg(mcp.name) + ')')
+      + `</div>`;
+    return `<tr><td><div style="display:flex;align-items:center"><span class="status-dot ${stCls}"></span><strong>${mcp.name}</strong><span class="status-label ${statusLabelCls}">${statusText}</span><span class="type-badge ${typeCls}">${mcp.type}</span>${sourceBadge}</div>${renderMcpInfo(mcp)}</td>${cells}<td>${actions}</td></tr>`;
   }).join('');
 }
 
 async function gatherMcp(name, sourceAgentId) {
-  if (!sourceAgentId) { toast('找不到来源 Agent', 'error'); return; }
+  if (!sourceAgentId) { toast(t('sourceAgentNotFound'), 'error'); return; }
   const resp = await fetch('/api/mcp/gather', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({name, source_agent_id: sourceAgentId})
   });
   const r = await resp.json();
   if (r.success) {
-    toast(`已归聚 ${name} 到 Hub`, 'success');
+    toast(t('gatheredMcp', { name }), 'success');
     loadMcp();
   } else {
-    toast(`归聚失败: ${r.error || '未知错误'}`, 'error');
+    toast(t('gatherFailed', { error: r.error || t('unknownError') }), 'error');
   }
 }
 
@@ -720,7 +1017,7 @@ async function toggleUnmanagedMcp(name, agentId) {
   const mcp = mcpData.mcps.find(m => m.name === name);
   if (!mcp) return;
   const sourceAgent = (mcp.source_agents || [])[0];
-  const confirmed = confirm(`「${name}」尚未归聚到 Hub。\n归聚后才能在其他 Agent 启用。\n\n是否立即归聚？`);
+  const confirmed = confirm(getUngatheredMcpConfirm(name, 'enable'));
   if (!confirmed) return;
   await gatherMcp(name, sourceAgent);
   await loadMcp();
@@ -730,7 +1027,7 @@ async function toggleUnmanagedMcp(name, agentId) {
 function toggleMcpAgent(name, agentId) {
   // 悟空阻断：不支持自定义 MCP
   if (agentId === 'wukong') {
-    alert('悟空不支持自定义 MCP 外挂，无法通过 Tool Hub 分发。');
+    alert(t('wukongMcpUnsupported'));
     return;
   }
   const key = `${name}|${agentId}`;
@@ -757,13 +1054,13 @@ function cancelMcpPending() {
   pendingMcpChanges = {};
   renderMcpMatrix();
   renderMcpPendingBar();
-  toast('已取消所有 MCP 变更');
+  toast(t('cancelMcpChanges'));
 }
 
 async function saveMcpPending() {
   const entries = Object.entries(pendingMcpChanges);
   if (entries.length === 0) return;
-  toast(`正在保存 ${entries.length} 项 MCP 变更...`);
+  toast(t('savingMcpChanges', { count: entries.length }));
   let errors = 0;
   for (const [key, action] of entries) {
     const [name, agentId] = key.split('|');
@@ -778,14 +1075,14 @@ async function saveMcpPending() {
   pendingMcpChanges = {};
   await loadMcp();
   renderMcpPendingBar();
-  if (errors > 0) toast(`保存完成，${errors} 项失败`, 'error');
-  else toast(`已保存 ${entries.length} 项 MCP 变更。请重启 Agent 应用以生效。`);
+  if (errors > 0) toast(t('saveDoneWithErrors', { count: errors }), 'error');
+  else toast(t('savedMcpChanges', { count: entries.length }));
 }
 
 async function testMcp(name) {
   const mcp = mcpData.mcps.find(m=>m.name===name);
   if (mcp && mcp.source === 'agent') {
-    const confirmed = confirm(`「${name}」尚未归聚到 Hub。\n归聚后才能进行连通测试。\n\n是否归聚并测试？`);
+    const confirmed = confirm(getUngatheredMcpConfirm(name, 'test'));
     if (!confirmed) return;
     await gatherMcp(name, (mcp.source_agents||[])[0]);
   }
@@ -794,30 +1091,53 @@ async function testMcp(name) {
     testingMcp._connectivity = 'testing';
     renderMcpMatrix();
   }
-  const result = await (await fetch(`/api/mcp/${name}/test`,{method:'POST'})).json();
+  const result = await (await fetch(`/api/mcp/${name}/test`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fetch_tools:true})})).json();
   const mcpUpdated = mcpData.mcps.find(item => item.name === name);
-  if(mcpUpdated) mcpUpdated._connectivity = result.status;
+  if(mcpUpdated) {
+    mcpUpdated._connectivity = result.status;
+    if (Array.isArray(result.tools)) mcpUpdated.tools = result.tools;
+  }
   renderMcpMatrix();
-  toast(result.status==='ok'?`${name} 连通正常`:`${name} 失败: ${result.detail}`, result.status==='ok'?'success':'error');
+  toast(result.status==='ok'?t('mcpTestOk', { name }):t('mcpTestFail', { name, detail: result.detail }), result.status==='ok'?'success':'error');
 }
 
 async function deleteMcp(name) {
   const mcp = mcpData.mcps.find(m=>m.name===name);
   if (mcp && mcp.source === 'agent') {
-    const confirmed = confirm(`「${name}」尚未归聚到 Hub。\n归聚后才能从 Hub 删除。\n\n是否归聚并删除？`);
+    const confirmed = confirm(getUngatheredMcpConfirm(name, 'delete'));
     if (!confirmed) return;
     await gatherMcp(name, (mcp.source_agents||[])[0]);
   }
-  if(!confirm(`确定删除 "${name}"？将从所有 Agent 中移除。`)) return;
+  if(!confirm(getDeleteMcpConfirm(name))) return;
   await fetch(`/api/mcp/${name}`,{method:'DELETE'});
   loadMcp();
-  toast(`已删除 ${name}`,'success');
+  toast(t('deleted', { name }),'success');
+}
+
+function getUngatheredMcpConfirm(name, action) {
+  if (getUiLang() === 'en-US') {
+    const actionText = action === 'test' ? 'test it' : (action === 'delete' ? 'delete it from Hub' : (action === 'edit' ? 'edit its config' : 'enable it in other agents'));
+    return `"${name}" has not been gathered into Hub yet.\nYou need to gather it before you can ${actionText}.\n\nGather now?`;
+  }
+  const actionText = action === 'test' ? '进行连通测试' : (action === 'delete' ? '从 Hub 删除' : (action === 'edit' ? '编辑配置' : '在其他 Agent 启用'));
+  return `「${name}」尚未归聚到 Hub。\n归聚后才能${actionText}。\n\n是否立即归聚？`;
+}
+
+function getDeleteMcpConfirm(name) {
+  return getUiLang() === 'en-US'
+    ? `Delete "${name}"? It will be removed from all agents.`
+    : `确定删除 "${name}"？将从所有 Agent 中移除。`;
 }
 
 let mcpSortBy = 'name';
 let mcpSearchQuery = '';
 let mcpSortByAgent = '';
-function changeMcpSort(val) { mcpSortBy = val; mcpSortByAgent = ''; renderMcpMatrix(); }
+function changeMcpSort(val) {
+  mcpSortBy = val;
+  mcpSortByAgent = '';
+  writeUiState({ mcpSortBy });
+  renderMcpMatrix();
+}
 function mcpSortByAgentClick(agentId) {
   if (mcpSortByAgent === agentId) { mcpSortByAgent = ''; } else { mcpSortByAgent = agentId; }
   renderMcpMatrix();
@@ -838,35 +1158,40 @@ function clearMcpSearch() {
 let editingMcpName = null;
 function showAddMcpModal() {
   editingMcpName=null;
-  document.getElementById('mcp-modal-title').textContent='添加 MCP Server';
-  document.getElementById('mcp-name').value='';document.getElementById('mcp-name').disabled=false;
-  document.getElementById('mcp-type').value='stdio';
-  document.getElementById('mcp-command').value='';document.getElementById('mcp-args').value='';
-  document.getElementById('mcp-url').value='';document.getElementById('mcp-desc').value='';
-  toggleMcpFields();
+  document.getElementById('mcp-modal-title').textContent=t('addMcp').replace('+ ', '') + ' Server';
+  document.getElementById('mcp-config-text').value='';
   document.getElementById('mcp-modal').classList.remove('hidden');
 }
 function showEditMcpModal(name) {
   const mcp=mcpData.mcps.find(m=>m.name===name);
   if(!mcp) return;
   if (mcp.source === 'agent') {
-    const confirmed = confirm(`「${name}」尚未归聚到 Hub。\n归聚后才能编辑配置。\n\n是否归聚并编辑？`);
+    const confirmed = confirm(getUngatheredMcpConfirm(name, 'edit'));
     if (!confirmed) return;
     gatherMcp(name, (mcp.source_agents||[])[0]).then(() => { loadMcp().then(()=>showEditMcpModal(name)); });
     return;
   }
   editingMcpName=name;
-  document.getElementById('mcp-modal-title').textContent=`编辑 ${name}`;
-  document.getElementById('mcp-name').value=mcp.name;document.getElementById('mcp-name').disabled=true;
-  document.getElementById('mcp-type').value=mcp.type;
-  document.getElementById('mcp-command').value=mcp.command||'';
-  document.getElementById('mcp-args').value=(mcp.args||[]).join(', ');
-  document.getElementById('mcp-url').value=mcp.url||'';
-  document.getElementById('mcp-desc').value=mcp.description||'';
-  toggleMcpFields();
+  document.getElementById('mcp-modal-title').textContent=getUiLang() === 'en-US' ? `Edit ${name}` : `编辑 ${name}`;
+  document.getElementById('mcp-config-text').value=JSON.stringify(buildMcpServersConfig(mcp), null, 2);
   document.getElementById('mcp-modal').classList.remove('hidden');
 }
 function closeMcpModal(){document.getElementById('mcp-modal').classList.add('hidden');}
+
+function buildMcpServersConfig(mcp) {
+  const raw = {};
+  if (mcp.type === 'stdio') {
+    raw.command = mcp.command || '';
+    raw.args = Array.isArray(mcp.args) ? mcp.args : [];
+    if (mcp.env) raw.env = mcp.env;
+  } else {
+    raw.type = mcp.type || 'sse';
+    raw.url = mcp.url || '';
+    if (mcp.headers) raw.headers = mcp.headers;
+  }
+  if (mcp.description) raw.description = mcp.description;
+  return { mcpServers: { [mcp.name]: raw } };
+}
 
 // ============================================================
 // Skill 上传
@@ -879,7 +1204,7 @@ function showAddSkillModal() {
   document.getElementById('skill-upload-btn').disabled = true;
   document.getElementById('skill-upload-progress').classList.add('hidden');
   document.getElementById('skill-upload-bar').style.width = '0%';
-  document.getElementById('skill-upload-status').textContent = '上传中...';
+  document.getElementById('skill-upload-status').textContent = t('uploading');
   document.getElementById('skill-upload-modal').classList.remove('hidden');
 }
 
@@ -901,11 +1226,11 @@ function handleSkillFileSelect(e) {
 
 function selectSkillFile(file) {
   if (!file.name.endsWith('.zip')) {
-    toast('只支持 .zip 文件', 'error');
+    toast(t('zipOnly'), 'error');
     return;
   }
   selectedSkillFile = file;
-  document.getElementById('skill-file-name').textContent = `已选择: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+  document.getElementById('skill-file-name').textContent = t('fileSelected', { name: file.name, size: (file.size / 1024).toFixed(1) });
   document.getElementById('skill-upload-btn').disabled = false;
 }
 
@@ -915,7 +1240,7 @@ async function uploadSkill() {
   btn.disabled = true;
   document.getElementById('skill-upload-progress').classList.remove('hidden');
   document.getElementById('skill-upload-bar').style.width = '30%';
-  document.getElementById('skill-upload-status').textContent = '上传中...';
+  document.getElementById('skill-upload-status').textContent = t('uploading');
 
   const formData = new FormData();
   formData.append('file', selectedSkillFile);
@@ -926,38 +1251,39 @@ async function uploadSkill() {
     document.getElementById('skill-upload-bar').style.width = '100%';
 
     if (data.success) {
-      document.getElementById('skill-upload-status').textContent = `✅ ${data.skill.name} 已添加`;
-      toast(`Skill "${data.skill.name}" 上传成功`, 'success');
+      document.getElementById('skill-upload-status').textContent = t('skillAdded', { name: data.skill.name });
+      toast(t('skillUploadSuccess', { name: data.skill.name }), 'success');
       setTimeout(() => {
         closeSkillUploadModal();
         loadSkills().then(renderMatrix);
       }, 800);
     } else {
-      document.getElementById('skill-upload-status').textContent = '❌ 上传失败';
-      toast(data.error || '上传失败', 'error');
+      document.getElementById('skill-upload-status').textContent = t('uploadFailed');
+      toast(data.error || t('uploadFailed'), 'error');
       btn.disabled = false;
     }
   } catch (err) {
-    document.getElementById('skill-upload-status').textContent = '❌ 网络错误';
-    toast('网络错误: ' + err.message, 'error');
+    document.getElementById('skill-upload-status').textContent = t('networkError', { message: '' }).replace(': ', '');
+    toast(t('networkError', { message: err.message }), 'error');
     btn.disabled = false;
   }
 }
-function toggleMcpFields(){
-  const t=document.getElementById('mcp-type').value;
-  document.getElementById('mcp-stdio-fields').classList.toggle('hidden',t!=='stdio');
-  document.getElementById('mcp-url-fields').classList.toggle('hidden',t==='stdio');
-}
 async function submitMcp(){
-  const name=document.getElementById('mcp-name').value.trim();
-  const type=document.getElementById('mcp-type').value;
-  const body={name,type,description:document.getElementById('mcp-desc').value};
-  if(type==='stdio'){body.command=document.getElementById('mcp-command').value;body.args=document.getElementById('mcp-args').value.split(',').map(s=>s.trim()).filter(Boolean);}
-  else{body.url=document.getElementById('mcp-url').value;}
-  if(editingMcpName){await fetch(`/api/mcp/${editingMcpName}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
-  else{await fetch('/api/mcp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
-  closeMcpModal();loadMcp();
-  toast(editingMcpName?'已更新':'已添加','success');
+  const configText=document.getElementById('mcp-config-text').value.trim();
+  if(!configText){toast(t('mcpConfigRequired'),'error');return;}
+  const endpoint=editingMcpName?`/api/mcp/${encodeURIComponent(editingMcpName)}`:'/api/mcp';
+  const method=editingMcpName?'PUT':'POST';
+  try {
+    const res=await fetch(endpoint,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify({config_text:configText})});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok || data.error){toast(data.error||t('unknownError'),'error');return;}
+    closeMcpModal();
+    await loadMcp();
+    const count=Array.isArray(data.mcps)?data.mcps.length:1;
+    toast(editingMcpName?t('updateDone'):(count>1?t('importedMcp',{count}):t('addDone')),'success');
+  } catch (err) {
+    toast(t('networkError', { message: err.message }), 'error');
+  }
 }
 
 // ============================================================
@@ -967,10 +1293,12 @@ function renderAgentList() {
   const list = document.getElementById('agent-list');
   list.innerHTML = agents.map(agent => {
     const isHidden = hiddenAgents.has(agent.id);
-    const visBtn = `<button class="btn-visibility${isHidden ? ' hidden-agent' : ''}" onclick="toggleAgentVisibility('${agent.id}')" title="${isHidden ? '点击显示' : '点击隐藏'}">${isHidden ? '🙈' : '👁'}</button>`;
+    const visibilityLabel = label(isHidden ? 'showAgent' : 'hideAgent');
+    const visBtn = `<button class="btn-visibility${isHidden ? ' hidden-agent' : ''}" onclick="toggleAgentVisibility(${htmlAttr(jsArg(agent.id))})" title="${htmlAttr(visibilityLabel)}" aria-label="${htmlAttr(visibilityLabel)}">${icon(isHidden ? 'eye' : 'eye-off')}</button>`;
+    const editBtn = iconButton('pencil', 'edit', 'showEditAgent(' + jsArg(agent.id) + ')', 'icon-btn');
     return `<li>
       <span style="opacity:${isHidden ? '0.4' : '1'}"><span class="agent-dot" style="background:${isHidden ? '#666' : 'var(--green)'}"></span>${agent.name}</span>
-      <span>${visBtn}<button class="btn-sm btn-outline" onclick="showEditAgent('${agent.id}')">编辑</button></span>
+      <span style="display:inline-flex;gap:6px">${visBtn}${editBtn}</span>
     </li>`;
   }).join('');
 }
@@ -981,6 +1309,7 @@ function toggleAgentVisibility(agentId) {
   } else {
     hiddenAgents.add(agentId);
   }
+  writeUiState({ hiddenAgents: Array.from(hiddenAgents) });
   renderAgentList();
   renderMatrix();
   renderMcpMatrix();
@@ -997,11 +1326,11 @@ function renderMatrix() {
   const thead = document.getElementById('matrix-head');
   thead.innerHTML = `<tr><th style="text-align:left">Skill</th>${agentList.map(a => {
     const isWukong = a.id === 'wukong';
-    const tip = isWukong ? '⚠️ 悟空安装 skill 需要云端审核，本地 symlink 无效' : (Array.isArray(a.skills_dir) ? a.skills_dir.join(', ') : a.skills_dir || '');
-    const warn = isWukong ? ' <span style="font-size:10px;color:var(--yellow)" title="悟空安装 skill 需云端审核，本地挂载无效">⚠️</span>' : '';
+    const tip = isWukong ? t('wukongSkillTip') : (Array.isArray(a.skills_dir) ? a.skills_dir.join(', ') : a.skills_dir || '');
+    const warn = isWukong ? ` <span style="font-size:10px;color:var(--yellow)" title="${htmlAttr(t('wukongSkillWarnTitle'))}">!</span>` : '';
     const active = sortByAgent === a.id ? ' style="color:var(--primary);cursor:pointer;text-decoration:underline"' : ' style="cursor:pointer"';
-    return `<th title="${tip}" onclick="sortByAgentClick('${a.id}')"${active}>${a.name}${warn}</th>`;
-  }).join('')}<th>操作</th></tr>`;
+    return `<th title="${htmlAttr(tip)}" onclick="sortByAgentClick('${a.id}')"${active}>${a.name}${warn}</th>`;
+  }).join('')}<th>${t('actions')}</th></tr>`;
 
   // Filter skills
   const filtered = skills.filter(s => {
@@ -1032,19 +1361,20 @@ function renderMatrix() {
 
   const managedCount = skills.filter(s => s.managed !== false).length;
   const unmanagedCount = skills.filter(s => s.managed === false).length;
-  document.getElementById('skill-count').textContent = `共 ${filtered.length} 个 skill（已归聚 ${managedCount}，未归聚 ${unmanagedCount}）`;
+  document.getElementById('skill-count').textContent = t('skillCount', { count: filtered.length, managedCount, unmanagedCount });
   document.getElementById('skill-count-badge').textContent = skills.length;
 
   // Body
   const tbody = document.getElementById('matrix-body');
   tbody.innerHTML = filtered.map(skill => {
     const source = skill.source || '未知';
+    const sourceText = sourceDisplayName(source);
     let sourceCss = 'source-builtin';
     if (source === '自研') sourceCss = 'source-self';
     else if (!source.includes('内置') && source !== '未知') sourceCss = 'source-third';
 
     const unmanagedTag = skill.managed === false
-      ? '<span class="tag-unmanaged">📦 未归聚</span>' : '';
+      ? `<span class="tag-unmanaged">${t('unmanaged')}</span>` : '';
 
     const cells = agentList.map(agent => {
       const agentId = agent.id;
@@ -1053,44 +1383,47 @@ function renderMatrix() {
       const isManaged = skill.managed !== false;
       const pending = getPendingState(skill.id, agentId);
       const pendingMark = pending ? ' style="outline:2px dashed var(--yellow);outline-offset:-2px;cursor:pointer"' : ' style="cursor:pointer"';
-      // 🏠 = skill 来源归属方（实体目录或 origin_agent 记录）
+      // 源 = skill 来源归属方（实体目录或 origin_agent 记录）
       if (status === 'origin') {
         if (pending === 'unlink') {
-          return `<td><span class="cell-toggle cell-disabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="待保存：停用"></span></td>`;
+          return `<td><span class="cell-toggle cell-disabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="${htmlAttr(t('pendingStop'))}"></span></td>`;
         }
-        return `<td><span class="cell-toggle cell-local" onclick="toggleSkill('${skill.id}','${agentId}')" style="cursor:pointer" title="来源归属方 — 点击可停用">🏠</span></td>`;
+        return `<td><span class="cell-toggle cell-local" onclick="toggleSkill('${skill.id}','${agentId}')" style="cursor:pointer" title="${htmlAttr(t('sourceOwnerStopTitle'))}">${t('source')}</span></td>`;
       }
-      // origin_agent 记录的 agent 未连接时，显示为普通空格子（点击恢复后显示🏠）
+      // origin_agent 记录的 agent 未连接时，显示为普通空格子（点击恢复后显示来源标记）
       if (!status && skill.origin_agent === agentId) {
         if (pending === 'link') {
-          return `<td><span class="cell-toggle cell-local" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="待保存：恢复启用">🏠</span></td>`;
+          return `<td><span class="cell-toggle cell-local" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="${htmlAttr(t('pendingRestore'))}">${t('source')}</span></td>`;
         }
-        return `<td><span class="cell-toggle cell-disabled" onclick="toggleSkill('${skill.id}','${agentId}')" style="cursor:pointer;font-size:11px" title="已停用 — 点击恢复启用">点击启用</span></td>`;
+        return `<td><span class="cell-toggle cell-disabled" onclick="toggleSkill('${skill.id}','${agentId}')" style="cursor:pointer;font-size:11px" title="${htmlAttr(t('disabledRestoreTitle'))}">${t('clickEnableText')}</span></td>`;
       }
       // pending 状态覆盖
       if (pending === 'link') {
-        return `<td><span class="cell-toggle cell-enabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="待保存：启用">✓</span></td>`;
+        return `<td><span class="cell-toggle cell-enabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="${htmlAttr(t('pendingEnable'))}">✓</span></td>`;
       }
       if (pending === 'unlink') {
-        return `<td><span class="cell-toggle cell-disabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="待保存：禁用"></span></td>`;
+        return `<td><span class="cell-toggle cell-disabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="${htmlAttr(t('pendingDisable'))}"></span></td>`;
       }
-      // ✅ = symlink 已启用
+      // linked = symlink 已启用
       if (status === 'linked') {
-        return `<td><span class="cell-toggle cell-enabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="点击禁用">✓</span></td>`;
+        return `<td><span class="cell-toggle cell-enabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="${htmlAttr(t('clickDisable'))}">✓</span></td>`;
       }
       // 未启用：已归聚可启用 vs 未归聚不可启用
       if (isManaged) {
-        return `<td><span class="cell-toggle cell-disabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="点击启用">−</span></td>`;
+        return `<td><span class="cell-toggle cell-disabled" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="${htmlAttr(t('clickEnable'))}">−</span></td>`;
       }
-      return `<td><span class="cell-toggle cell-unmanaged" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="点击归聚到Hub后可启用">−</span></td>`;
+      return `<td><span class="cell-toggle cell-unmanaged" onclick="toggleSkill('${skill.id}','${agentId}')"${pendingMark} title="${htmlAttr(t('gatherThenEnableTitle'))}">−</span></td>`;
     }).join('');
 
-      const skillActionCell = `<td><div class="action-cell"><span class="action-btn-mcp" title="复制路径" onclick="copyPath('${(skill.path||'').replace(/'/g,"\\'")}')">📋</span><span class="action-btn-mcp" title="删除" onclick="deleteSkill('${skill.id}','${skill.name}',${skill.managed === false})">🗑️</span></div></td>`;
+      const skillActionCell = `<td><div class="action-cell">`
+        + iconButton('copy', 'copyPath', 'copyPath(' + jsArg(skill.path || '') + ')')
+        + iconButton('trash', 'delete', 'deleteSkill(' + jsArg(skill.id) + ',' + jsArg(skill.name) + ',' + (skill.managed === false) + ')')
+        + `</div></td>`;
 
     return `<tr>
       <td><div class="skill-name" style="display:flex;align-items:center;gap:6px">
         <span style="display:inline-flex;align-items:center;gap:4px"><strong>${skill.name}</strong></span>
-        <span style="margin-left:12px;display:inline-flex;align-items:center;gap:4px;flex-shrink:0"><span class="skill-source ${sourceCss}">${source}</span>${unmanagedTag}</span>
+        <span style="margin-left:12px;display:inline-flex;align-items:center;gap:4px;flex-shrink:0"><span class="skill-source ${sourceCss}">${htmlAttr(sourceText)}</span>${unmanagedTag}</span>
       </div>
       <div class="skill-desc" title="${skill.description || ''}">${skill.description || ''}</div></td>
       ${cells}${skillActionCell}</tr>`;
@@ -1148,7 +1481,7 @@ function toggleSkill(skillId, agentId) {
     if (!ownerAgents.includes(agentId)) {
       gatherPromptShown = true;
       const confirmed = confirm(
-        `「${skill.name}」目前仅存在于 ${ownerAgents.map(id => {const a = agents.find(a => a.id === id); return a ? a.name : id;}).join('、')} 本地。\n\n是否将它归聚到 Hub 中央仓库，以便分发给其他 Agent 使用？`
+        getUngatheredSkillConfirm(skill, ownerAgents)
       );
       if (confirmed) { doScanSync(); }
       return;
@@ -1167,6 +1500,13 @@ function toggleSkill(skillId, agentId) {
   renderPendingBar();
 }
 
+function getUngatheredSkillConfirm(skill, ownerAgents) {
+  const owners = ownerAgents.map(id => {const a = agents.find(a => a.id === id); return a ? a.name : id;}).join(getUiLang() === 'en-US' ? ', ' : '、');
+  return getUiLang() === 'en-US'
+    ? `"${skill.name}" exists only in ${owners}.\n\nGather it into the central Hub so it can be distributed to other agents?`
+    : `「${skill.name}」目前仅存在于 ${owners} 本地。\n\n是否将它归聚到 Hub 中央仓库，以便分发给其他 Agent 使用？`;
+}
+
 function getPendingState(skillId, agentId) {
   return pendingChanges[`${skillId}|${agentId}`] || null;
 }
@@ -1179,13 +1519,13 @@ function cancelPending() {
   pendingChanges = {};
   renderMatrix();
   renderPendingBar();
-  toast('已取消所有变更');
+  toast(t('cancelChanges'));
 }
 
 async function savePending() {
   const entries = Object.entries(pendingChanges);
   if (entries.length === 0) return;
-  toast(`正在保存 ${entries.length} 项变更...`);
+  toast(t('savingChanges', { count: entries.length }));
   let errors = 0;
   for (const [key] of entries) {
     const [skillId, agentId] = key.split('|');
@@ -1197,15 +1537,15 @@ async function savePending() {
   config = await api('/config');
   renderMatrix();
   renderPendingBar();
-  if (errors > 0) toast(`保存完成，${errors} 项失败`, 'error');
-  else toast(`已保存 ${entries.length} 项变更。请重启 Agent 应用或新开对话以生效。`);
+  if (errors > 0) toast(t('saveDoneWithErrors', { count: errors }), 'error');
+  else toast(t('savedChanges', { count: entries.length }));
 }
 
 // ============================================================
 // Scan & Sync
 // ============================================================
 async function doScanSync() {
-  toast('正在扫描刷新...');
+  toast(t('scanning'));
   const result = await api('/scan-sync', 'POST');
   if (result.error) { toast(result.error, 'error'); return; }
 
@@ -1222,13 +1562,13 @@ async function doScanSync() {
   // 汇总提示后刷新页面
   const msgs = [];
   if (newSkills.length > 0) {
-    const names = newSkills.map(s => s.name || s.id).join('、');
-    msgs.push(`归聚了 ${newSkills.length} 个新 skill：${names}`);
+    const names = newSkills.map(s => s.name || s.id).join(getUiLang() === 'en-US' ? ', ' : '、');
+    msgs.push(t('gatheredNewSkills', { count: newSkills.length, names }));
   }
-  if (linksCreated > 0) msgs.push(`补建了 ${linksCreated} 个链接`);
-  if (brokenLinks > 0) msgs.push(`发现 ${brokenLinks} 个断链`);
-  if (msgs.length === 0) toast('一切正常，无需操作');
-  else toast(msgs.join('；'));
+  if (linksCreated > 0) msgs.push(t('rebuiltLinks', { count: linksCreated }));
+  if (brokenLinks > 0) msgs.push(t('brokenLinks', { count: brokenLinks }));
+  if (msgs.length === 0) toast(t('scanAllGood'));
+  else toast(msgs.join(getUiLang() === 'en-US' ? '; ' : '；'));
 
   // 刷新数据
   await Promise.all([loadSkills(), loadAgents(), loadMcp()]);
@@ -1236,8 +1576,6 @@ async function doScanSync() {
   buildSourceDropdown();
   renderMatrix();
 
-  // 静默回传环境信息
-  sendSilentFeedback('扫描刷新完成');
 }
 
 function showScanModal(result) {
@@ -1245,20 +1583,20 @@ function showScanModal(result) {
   modal.classList.remove('hidden');
 
   const stats = [];
-  if (result.links_created) stats.push(`补建了 ${result.links_created} 个 ln`);
-  if (result.broken_links) stats.push(`发现 ${result.broken_links} 个断链`);
-  document.getElementById('scan-stats').textContent = stats.join('，') || '同步完成';
+  if (result.links_created) stats.push(t('rebuiltLn', { count: result.links_created }));
+  if (result.broken_links) stats.push(t('brokenLinks', { count: result.broken_links }));
+  document.getElementById('scan-stats').textContent = stats.join(getUiLang() === 'en-US' ? ', ' : '，') || t('syncDone');
 
   const newSkills = result.new_discovered || [];
   const container = document.getElementById('scan-results');
   const btnGather = document.getElementById('btn-gather');
 
   if (newSkills.length === 0) {
-    container.innerHTML = '<p style="color:var(--text2);padding:16px;text-align:center">没有发现新的 skill</p>';
+    container.innerHTML = `<p style="color:var(--text2);padding:16px;text-align:center">${t('noNewSkills')}</p>`;
     btnGather.classList.add('hidden');
   } else {
     btnGather.classList.remove('hidden');
-    container.innerHTML = `<p style="margin-bottom:12px">发现 ${newSkills.length} 个新 skill，勾选确认归聚：</p>` +
+    container.innerHTML = `<p style="margin-bottom:12px">${t('newSkillFound', { count: newSkills.length })}</p>` +
       newSkills.map((s, i) => `
       <div class="scan-item">
         <div><input type="checkbox" checked data-scan-idx="${i}"> <strong class="scan-new">${s.name || s.id}</strong>
@@ -1279,11 +1617,11 @@ async function doGather() {
     const idx = parseInt(cb.dataset.scanIdx);
     if (scanResults.new_discovered[idx]) selected.push(scanResults.new_discovered[idx]);
   });
-  if (selected.length === 0) { toast('未选择任何 skill', 'error'); return; }
+  if (selected.length === 0) { toast(t('noSkillSelected'), 'error'); return; }
   const result = await api('/gather', 'POST', { skills: selected });
   closeScanModal();
   if (result.error) { toast(result.error, 'error'); return; }
-  toast(`成功归聚 ${selected.length} 个 skill`);
+  toast(t('gatheredSkills', { count: selected.length }));
   await Promise.all([loadSkills(), loadAgents()]);
   config = await api('/config');
   buildSourceDropdown();
@@ -1291,91 +1629,10 @@ async function doGather() {
 }
 
 // ============================================================
-// Feedback
-// ============================================================
-async function showFeedbackModal() {
-  document.getElementById('feedback-text').value = '';
-  document.getElementById('feedback-modal').classList.remove('hidden');
-}
-
-function closeFeedbackModal() {
-  document.getElementById('feedback-modal').classList.add('hidden');
-}
-
-async function buildFeedbackPayload(feedbackText) {
-  const userInfo = await api('/user-info');
-  const skillList = (skills || []).map(s => ({
-    name: s.name || s.id,
-    description: s.description || '',
-    agents: Object.entries(s.agents || {}).filter(([,v]) => v).map(([k]) => k)
-  }));
-  const agentList = (config?.agents || []).map(a => ({
-    id: a.id, name: a.name, skills_count: skillList.filter(s => s.agents.includes(a.id)).length
-  }));
-  const mcpList = (mcpData.mcps || []).map(m => ({
-    name: m.name,
-    type: m.type || 'unknown',
-    description: m.description || '',
-    source: m.source || 'unknown',
-    agents: Object.entries(m.agent_status || {}).filter(([,v]) => v).map(([k]) => k),
-    connectivity: m._connectivity || 'unknown'
-  }));
-  return {
-    feedback: feedbackText || '',
-    user: userInfo?.user || 'unknown',
-    skills: skillList,
-    mcps: mcpList,
-    agents: agentList,
-    stats: { total_skills: skillList.length, total_mcps: mcpList.length, total_agents: agentList.length }
-  };
-}
-
-async function postFeedback(payload) {
-  const feedbackUrl = config?.feedback_url;
-  if (!feedbackUrl) return false;
-  try {
-    const resp = await fetch(feedbackUrl + '/api/feedback', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const result = await resp.json();
-    return result.ok === true;
-  } catch (e) { return false; }
-}
-
-async function sendSilentFeedback(source) {
-  const payload = await buildFeedbackPayload(`[自动] ${source}`);
-  postFeedback(payload);
-}
-
-async function sendFeedback() {
-  const text = document.getElementById('feedback-text').value.trim();
-  if (!text) { toast('请填写反馈内容', 'error'); return; }
-
-  const btn = document.getElementById('btn-send-feedback');
-  btn.disabled = true;
-  btn.textContent = '发送中...';
-
-  const feedbackUrl = config?.feedback_url;
-  if (!feedbackUrl) { toast('未配置反馈收集地址', 'error'); btn.disabled = false; btn.textContent = '发送反馈'; return; }
-
-  const payload = await buildFeedbackPayload(text);
-  const ok = await postFeedback(payload);
-  if (ok) {
-    toast('反馈已发送，感谢！');
-    closeFeedbackModal();
-  } else {
-    toast('反馈服务暂不可用，请通过钉钉联系工号 92849 反馈', 'error');
-  }
-  btn.disabled = false;
-  btn.textContent = '发送反馈';
-}
-
-// ============================================================
 // Agent CRUD
 // ============================================================
 function showAddAgent() {
-  document.getElementById('agent-modal-title').textContent = '添加 Agent';
+  document.getElementById('agent-modal-title').textContent = t('addAgentTitle');
   document.getElementById('agent-edit-id').value = '';
   document.getElementById('agent-name').value = '';
   document.getElementById('agent-onboarding-section').classList.remove('hidden');
@@ -1388,7 +1645,7 @@ function showAddAgent() {
 function showEditAgent(agentId) {
   const agent = agents.find(a => a.id === agentId);
   if (!agent) return;
-  document.getElementById('agent-modal-title').textContent = '编辑 Agent';
+  document.getElementById('agent-modal-title').textContent = t('editAgentTitle');
   document.getElementById('agent-edit-id').value = agentId;
   document.getElementById('agent-onboarding-section').classList.add('hidden');
   document.getElementById('agent-name').value = agent.name || '';
@@ -1411,9 +1668,9 @@ function addDirRow(value) {
   const row = document.createElement('div');
   row.className = 'form-row';
   row.style.cssText = 'margin-bottom:6px';
-  row.innerHTML = `<input type="text" class="agent-dir-input" value="${(value||'').replace(/"/g,'&quot;')}" placeholder="如: /Users/wayne/.cursor/skills" style="flex:1">
-    <button class="btn-outline btn-sm" onclick="chooseFolderForRow(this)" style="white-space:nowrap">📂</button>
-    <button class="btn-sm" onclick="this.parentElement.remove()" style="background:transparent;color:var(--red);padding:4px 8px" title="删除此路径">✕</button>`;
+  row.innerHTML = `<input type="text" class="agent-dir-input" value="${(value||'').replace(/"/g,'&quot;')}" placeholder="${htmlAttr(t('dirPlaceholder'))}" style="flex:1">
+    <button class="btn-outline btn-sm" onclick="chooseFolderForRow(this)" style="white-space:nowrap">${t('browse')}</button>
+    ${iconButton('x', 'deletePath', 'this.parentElement.remove()', 'icon-btn')}`;
   list.appendChild(row);
 }
 
@@ -1424,7 +1681,7 @@ async function chooseFolderForRow(btn) {
     const result = await api('/choose-folder', 'POST', { default_path: currentValue });
     if (result && result.path) input.value = result.path;
   } catch (e) {
-    toast('无法打开目录选择器', 'error');
+    toast(t('folderPickerFailed'), 'error');
   }
 }
 
@@ -1438,15 +1695,15 @@ async function chooseMcpConfigPath() {
     const result = await api('/choose-file', 'POST', { default_path: currentValue });
     if (result && result.path) document.getElementById('agent-mcp-path').value = result.path;
   } catch (e) {
-    toast('无法打开文件选择器', 'error');
+    toast(t('filePickerFailed'), 'error');
   }
 }
 
 async function copyAgentOnboardingPrompt() {
   const result = await api('/agent-onboarding-prompt');
   if (result && result.error) { toast(result.error, 'error'); return; }
-  if (!result || !result.prompt) { toast('生成接入 Prompt 失败', 'error'); return; }
-  copyText(result.prompt, '已复制自助接入 Prompt，请粘贴到目标 Agent 中执行');
+  if (!result || !result.prompt) { toast(t('onboardingPromptFailed'), 'error'); return; }
+  copyText(result.prompt, t('onboardingPromptCopied'));
 }
 
 function closeAgentModal() {
@@ -1457,8 +1714,8 @@ async function saveAgent() {
   const editId = document.getElementById('agent-edit-id').value;
   const name = document.getElementById('agent-name').value.trim();
   const dirs = getDirValues();
-  if (!name) { toast('请填写名称', 'error'); return; }
-  if (!dirs.length) { toast('请填写至少一个 Skills 目录路径', 'error'); return; }
+  if (!name) { toast(t('nameRequired'), 'error'); return; }
+  if (!dirs.length) { toast(t('skillsDirRequired'), 'error'); return; }
   const skillsDir = dirs.length === 1 ? dirs[0] : dirs;
   const mcpPath = document.getElementById('agent-mcp-path').value.trim();
   const mcpKey = document.getElementById('agent-mcp-key').value.trim();
@@ -1475,9 +1732,10 @@ async function saveAgent() {
 
   if (result && result.error) { toast(result.error, 'error'); return; }
   closeAgentModal();
-  toast(editId ? 'Agent 已更新' : 'Agent 已添加');
+  toast(editId ? t('agentUpdated') : t('agentAdded'));
   await Promise.all([loadSkills(), loadAgents()]);
   config = await api('/config');
+  buildSourceDropdown();
   renderAgentList();
   renderMatrix();
 }
@@ -1493,7 +1751,7 @@ function findAgentName(agentId) {
 
 function shortenPath(p) {
   if (!p) return '';
-  return p.replace(/\/Users\/\w+/g, '~').replace(/\/Documents\/ai产物/g, '/ai产物');
+  return p.replace(/\/Users\/[^/]+/g, '~').replace(/\\Users\\[^\\]+/g, '~');
 }
 
 async function loadLogs() {
@@ -1520,8 +1778,8 @@ async function loadLogs() {
   list.innerHTML = batchOrder.map(batchId => {
     const entries = batches[batchId];
     const first = entries[0];
-    const actionType = first.action || '操作';
-    const time = first.ts ? new Date(first.ts).toLocaleString('zh-CN') : '';
+    const actionType = first.action || t('actions');
+    const time = first.ts ? new Date(first.ts).toLocaleString(getUiLang()) : '';
     const allRolledBack = entries.every(e => e.rolled_back);
 
     const entriesHtml = entries.map(entry => {
@@ -1533,37 +1791,37 @@ async function loadLogs() {
       const detail = entry.detail || {};
       const skillName = entry.skill || '';
       const agentName = detail.agent_id || '';
-      const timeStr = entry.ts ? new Date(entry.ts).toLocaleString('zh-CN') : '';
+      const timeStr = entry.ts ? new Date(entry.ts).toLocaleString(getUiLang()) : '';
       let descText = '';
       let subDetail = '';
       if (entry.action === 'link') {
         const agentLabel = findAgentName(agentName);
-        descText = `✅ 启用 <strong>${skillName}</strong> → ${agentLabel}`;
+        descText = getUiLang() === 'en-US' ? `Enable <strong>${skillName}</strong> → ${agentLabel}` : `启用 <strong>${skillName}</strong> → ${agentLabel}`;
         subDetail = detail.link_path ? `<span style="font-size:11px;color:var(--text2);margin-left:4px">${shortenPath(detail.link_path)}</span>` : '';
       } else if (entry.action === 'unlink') {
         const agentLabel = findAgentName(agentName);
-        descText = `❌ 禁用 <strong>${skillName}</strong> ← ${agentLabel}`;
+        descText = getUiLang() === 'en-US' ? `Disable <strong>${skillName}</strong> ← ${agentLabel}` : `禁用 <strong>${skillName}</strong> ← ${agentLabel}`;
       } else if (entry.action === 'unlink_origin') {
         const agentLabel = findAgentName(agentName);
-        descText = `🏠→📦 停用归属 <strong>${skillName}</strong>（${agentLabel} → Hub）`;
+        descText = getUiLang() === 'en-US' ? `Stop origin <strong>${skillName}</strong> (${agentLabel} → Hub)` : `停用归属 <strong>${skillName}</strong>（${agentLabel} → Hub）`;
       } else if (entry.action === 'gather') {
-        descText = `📦 归聚 <strong>${skillName}</strong>`;
+        descText = getUiLang() === 'en-US' ? `Gather <strong>${skillName}</strong>` : `归聚 <strong>${skillName}</strong>`;
         subDetail = detail.from ? `<span style="font-size:11px;color:var(--text2);margin-left:4px">${shortenPath(detail.from)} → Hub</span>` : '';
       } else if (entry.action === 'config') {
         const hubPath = detail.hub_path || '';
-        descText = `⚙️ 配置变更`;
+        descText = getUiLang() === 'en-US' ? 'Config changed' : '配置变更';
         subDetail = hubPath ? `<span style="font-size:11px;color:var(--text2);margin-left:4px">hub_path: ${hubPath}</span>` : '';
       } else if (entry.action === 'mcp_gather') {
-        descText = `🔌 归聚 MCP <strong>${skillName}</strong>`;
-        subDetail = detail.source_agent_id ? `<span style="font-size:11px;color:var(--text2);margin-left:4px">来源: ${findAgentName(detail.source_agent_id)}</span>` : '';
+        descText = getUiLang() === 'en-US' ? `Gather MCP <strong>${skillName}</strong>` : `归聚 MCP <strong>${skillName}</strong>`;
+        subDetail = detail.source_agent_id ? `<span style="font-size:11px;color:var(--text2);margin-left:4px">${getUiLang() === 'en-US' ? 'Source' : '来源'}: ${findAgentName(detail.source_agent_id)}</span>` : '';
       } else if (entry.action === 'mcp_enable') {
         const agentLabel = findAgentName(detail.agent_id || '');
-        descText = `🔌 启用 MCP <strong>${skillName}</strong> → ${agentLabel}`;
+        descText = getUiLang() === 'en-US' ? `Enable MCP <strong>${skillName}</strong> → ${agentLabel}` : `启用 MCP <strong>${skillName}</strong> → ${agentLabel}`;
       } else if (entry.action === 'mcp_disable') {
         const agentLabel = findAgentName(detail.agent_id || '');
-        descText = `🔌 禁用 MCP <strong>${skillName}</strong> ← ${agentLabel}`;
+        descText = getUiLang() === 'en-US' ? `Disable MCP <strong>${skillName}</strong> ← ${agentLabel}` : `禁用 MCP <strong>${skillName}</strong> ← ${agentLabel}`;
       } else if (entry.action === 'mcp_delete') {
-        descText = `🔌 删除 MCP <strong>${skillName}</strong>`;
+        descText = getUiLang() === 'en-US' ? `Delete MCP <strong>${skillName}</strong>` : `删除 MCP <strong>${skillName}</strong>`;
       } else {
         descText = `${entry.action} ${skillName}`;
       }
@@ -1574,12 +1832,12 @@ async function loadLogs() {
           <span>${descText}</span>${subDetail}
           <span class="log-time" style="margin-left:auto">${timeStr}</span>
         </div>
-        ${!entry.rolled_back && entry.reversible ? '<button class="btn-sm btn-outline" onclick="undoSingle(\'' + entry.id + '\')">↩️</button>' : ''}
+        ${!entry.rolled_back && entry.reversible ? '<button class="btn-sm btn-outline" onclick="undoSingle(\'' + entry.id + '\')">' + t('undo') + '</button>' : ''}
       </div>`;
     }).join('');
 
     const rollbackBtn = allRolledBack ? '' :
-      `<button class="btn-sm btn-outline" onclick="rollbackBatch('${batchId}')">↩️ 批量撤销</button>`;
+      `<button class="btn-sm btn-outline" onclick="rollbackBatch('${batchId}')">${t('batchUndo')}</button>`;
 
     return `<div class="log-batch">
       <div class="log-batch-header">
@@ -1592,10 +1850,10 @@ async function loadLogs() {
 }
 
 async function rollbackBatch(batchId) {
-  if (!confirm('确定要批量撤销这组操作吗？')) return;
+  if (!confirm(t('batchUndoConfirm'))) return;
   const result = await api(`/logs/${encodeURIComponent(batchId)}/rollback`, 'POST');
   if (result && result.error) { toast(result.error, 'error'); return; }
-  toast('批量撤销成功');
+  toast(t('batchUndoDone'));
   loadLogs();
   await Promise.all([loadSkills(), loadAgents()]);
   config = await api('/config');
@@ -1603,10 +1861,10 @@ async function rollbackBatch(batchId) {
 }
 
 async function undoSingle(logId) {
-  if (!confirm('确定要撤销这条操作吗？')) return;
+  if (!confirm(t('undoConfirm'))) return;
   const result = await api(`/logs/${encodeURIComponent(logId)}/undo`, 'POST');
   if (result && result.error) { toast(result.error, 'error'); return; }
-  toast('已撤销');
+  toast(t('undoDone'));
   loadLogs();
   await Promise.all([loadSkills(), loadAgents()]);
   config = await api('/config');
@@ -1621,37 +1879,72 @@ function showWukongTip(path) {
   document.getElementById('wukong-modal').classList.remove('hidden');
 }
 
-function copyText(text, successMessage) {
-  navigator.clipboard.writeText(text).then(() => toast(successMessage)).catch(() => {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
+async function copyText(text, successMessage) {
+  const value = (text || '').trim();
+  if (!value) {
+    toast(t('copyFailedEmpty'), 'error');
+    return false;
+  }
+
+  try {
+    await navigator.clipboard.writeText(value);
     toast(successMessage);
-  });
+    return true;
+  } catch (_) {
+    const textArea = document.createElement('textarea');
+    textArea.value = value;
+    textArea.setAttribute('readonly', '');
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    textArea.style.pointerEvents = 'none';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    let copied = false;
+    try {
+      copied = document.execCommand('copy');
+    } catch (_) {
+      copied = false;
+    } finally {
+      document.body.removeChild(textArea);
+    }
+
+    if (copied) {
+      toast(successMessage);
+      return true;
+    }
+
+    toast(t('copyFailedManual'), 'error');
+    return false;
+  }
 }
 
 function copyPath(path) {
-  copyText(path, '已复制路径');
+  return copyText(path, t('copiedPath'));
 }
 
 async function deleteSkill(skillId, skillName, isUnmanaged) {
   if (isUnmanaged) {
-    const confirmed = confirm(`「${skillName}」尚未归聚到 Hub。\n归聚后才能从 Hub 删除。\n\n是否归聚并删除？`);
+    const confirmed = confirm(getUngatheredMcpConfirm(skillName, 'delete'));
     if (!confirmed) return;
     await doScanSync();
   }
-  if (!confirm(`确定删除 "${skillName}"？将从 Hub 中移除。`)) return;
+  if (!confirm(getDeleteSkillConfirm(skillName))) return;
   const result = await api(`/skills/${encodeURIComponent(skillId)}`, 'DELETE');
   if (result && result.success) {
-    toast(`已删除 ${skillName}`, 'success');
+    toast(t('deleted', { name: skillName }), 'success');
     await loadSkills();
     renderMatrix();
   } else {
-    toast(result?.error || '删除失败', 'error');
+    toast(result?.error || t('deleteFailed'), 'error');
   }
+}
+
+function getDeleteSkillConfirm(name) {
+  return getUiLang() === 'en-US'
+    ? `Delete "${name}"? It will be removed from Hub.`
+    : `确定删除 "${name}"？将从 Hub 中移除。`;
 }
 
 function toast(msg, type = 'success') {

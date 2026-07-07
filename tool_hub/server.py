@@ -27,7 +27,7 @@ def start_web_server(host="127.0.0.1", port=PORT, open_browser=True):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(prog="tool-hub-web")
+    parser = argparse.ArgumentParser(prog="agent-tool-hub-web")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=PORT)
     parser.add_argument("--no-browser", action="store_true")

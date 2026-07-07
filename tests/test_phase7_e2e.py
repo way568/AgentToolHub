@@ -130,6 +130,8 @@ class Phase7EndToEndTests(unittest.TestCase):
             self.assertEqual(second.returncode, 0, second.stderr)
             stored = json.loads(mcp_path.read_text(encoding="utf-8"))
             self.assertEqual(stored["description"], "提供 2 个工具：alpha, beta")
+            self.assertEqual(stored["tools"], [{"name": "alpha"}, {"name": "beta"}])
+            self.assertIn("tools_updated_at", stored)
 
     def test_cli_skills_gather_and_toggle_flow(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -169,7 +171,8 @@ class Phase7EndToEndTests(unittest.TestCase):
             )
             self.assertEqual(gather.returncode, 0, gather.stderr)
             self.assertTrue((hub_path / "beta").is_dir())
-            self.assertTrue(skill_dir.is_symlink())
+            from tool_hub.linking import is_managed_link
+            self.assertTrue(is_managed_link(skill_dir))
 
             enable = self.run_cli(
                 "skills",
@@ -182,7 +185,7 @@ class Phase7EndToEndTests(unittest.TestCase):
                 "cursor",
             )
             self.assertEqual(enable.returncode, 0, enable.stderr)
-            self.assertTrue((target_root / "beta").is_symlink())
+            self.assertTrue(is_managed_link(target_root / "beta"))
 
             disable = self.run_cli(
                 "skills",

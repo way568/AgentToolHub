@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility entrypoint for Tool Hub web server."""
+"""Compatibility entrypoint for AgentToolHub web server."""
 
 from tool_hub.server import main
 

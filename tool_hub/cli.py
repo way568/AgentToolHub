@@ -20,7 +20,7 @@ def _load_config_or_empty(hub_path=None):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(prog="tool-hub")
+    parser = argparse.ArgumentParser(prog="agent-tool-hub")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     doctor = subparsers.add_parser("doctor")
@@ -28,7 +28,7 @@ def build_parser():
 
     web = subparsers.add_parser("web")
     web.add_argument("--host", default="127.0.0.1")
-    web.add_argument("--port", type=int, default=8765)
+    web.add_argument("--port", type=int, default=8998)
     web.add_argument("--no-browser", action="store_true")
 
     agents = subparsers.add_parser("agents")

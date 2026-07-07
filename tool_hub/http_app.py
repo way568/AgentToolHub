@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tool Hub Server - 跨 Agent 统一管理台（Skill + MCP）"""
+"""AgentToolHub Server - 跨 Agent 统一管理台（Skill + MCP）"""
 
 import json
 import os
@@ -20,66 +20,22 @@ from tool_hub import config_store as hub_config_store
 from tool_hub import presets as hub_presets
 from tool_hub.backends import toml_cfg as hub_toml_cfg
 from tool_hub.errors import ToolHubError
+from tool_hub.linking import is_managed_link, resolve_link_or_self
 from tool_hub.mcp import adapters as hub_mcp_adapters
 from tool_hub.mcp import agent_config as hub_mcp_agent_config
 from tool_hub.mcp import runtime as hub_mcp_runtime
 from tool_hub.mcp import store as hub_mcp_store
 from tool_hub.services.audit import AuditService
 from tool_hub.services.agents import AgentService
-from tool_hub.services.config import ConfigService, DEFAULT_FEEDBACK_URL as CONFIG_DEFAULT_FEEDBACK_URL
+from tool_hub.services.config import ConfigService
 from tool_hub.services.mcp import McpService
 from tool_hub.services.skills import SkillService
 from tool_hub.services.upload import UploadSkillService
 from tool_hub.safety import allow_cors_origin
 
-PORT = 8765
+PORT = 8998
 CONFIG_FILENAME = "tool-hub.json"
 LOG_FILENAME = ".tool-hub-log.jsonl"
-DEFAULT_FEEDBACK_URL = CONFIG_DEFAULT_FEEDBACK_URL
-# 指针文件：存放在 skill 目录旁，记录用户配置的 hub_path
-HUB_PATH_POINTER = Path(__file__).parent / ".hub-path"
-
-# ============================================================
-# 配置管理
-# ============================================================
-
-def get_default_hub_path():
-    """默认推荐路径"""
-    return str(Path.home() / "tool-hub")
-
-
-def get_saved_hub_path():
-    """从指针文件读取用户上次设置的 hub_path，没有则返回 None"""
-    if HUB_PATH_POINTER.exists():
-        return HUB_PATH_POINTER.read_text(encoding="utf-8").strip()
-    return None
-
-
-def save_hub_path_pointer(hub_path):
-    """将 hub_path 写入指针文件，下次启动时可找到配置"""
-    HUB_PATH_POINTER.write_text(hub_path, encoding="utf-8")
-
-
-def load_config(hub_path=None):
-    """加载配置文件，不存在则返回 None"""
-    if not hub_path:
-        hub_path = get_saved_hub_path() or get_default_hub_path()
-    config_path = Path(hub_path) / CONFIG_FILENAME
-    if not config_path.exists():
-        return None
-    with open(config_path, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def save_config(config):
-    """保存配置到文件，同时更新指针文件"""
-    hub_path = config.get("hub_path", get_default_hub_path())
-    Path(hub_path).mkdir(parents=True, exist_ok=True)
-    config_path = Path(hub_path) / CONFIG_FILENAME
-    with open(config_path, "w", encoding="utf-8") as f:
-        json.dump(config, f, ensure_ascii=False, indent=2)
-    save_hub_path_pointer(hub_path)
-
 
 def normalize_skills_dirs(agent):
     """将 skills_dir 统一为列表格式"""
@@ -380,7 +336,7 @@ def infer_source(skill_path, hub_path, agents):
     for agent in agents:
         for d in normalize_skills_dirs(agent):
             agent_dir = str(Path(d).resolve())
-            if skill_path.startswith(agent_dir) and not Path(skill_path).is_symlink():
+            if skill_path.startswith(agent_dir) and not is_managed_link(Path(skill_path)):
                 return f"{agent['name']}-内置"
     # 有 .git 目录
     git_dir = Path(skill_path) / ".git"
@@ -408,7 +364,7 @@ def is_excluded(name, excludes):
 # ============================================================
 
 MCP_DIR_NAME = "mcp"
-MCP_ADAPTERS_DIR = Path(__file__).parent / "mcp-adapters"
+MCP_ADAPTERS_DIR = Path(__file__).parent / "data" / "mcp-adapters"
 
 def get_mcp_dir(hub_path):
     """获取 MCP 归聚存档目录"""
@@ -748,7 +704,7 @@ def fetch_mcp_tools_description(mcp_data):
             # 启动子进程，通过 stdin/stdout 交互 JSON-RPC
             proc = subprocess.Popen(full_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
             # 发送 initialize
-            init_req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "tool-hub", "version": "1.0"}}}) + "\n"
+            init_req = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "agent-tool-hub", "version": "1.0"}}}) + "\n"
             proc.stdin.write(init_req.encode())
             proc.stdin.flush()
             # 读取 initialize 响应
@@ -790,7 +746,7 @@ def fetch_mcp_tools_description(mcp_data):
             opener = urllib.request.build_opener(_RedirectHandler)
 
             # initialize
-            init_payload = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "tool-hub", "version": "1.0"}}}).encode()
+            init_payload = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "agent-tool-hub", "version": "1.0"}}}).encode()
             req = urllib.request.Request(url, data=init_payload, method="POST", headers=headers)
             with opener.open(req, timeout=10) as resp:
                 resp.read()  # consume
@@ -861,7 +817,7 @@ def test_mcp_connectivity(mcp_data):
 
         if mcp_type == "streamableHttp":
             # Streamable HTTP MCP 使用 POST + JSON-RPC initialize
-            payload = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "tool-hub-test", "version": "1.0"}}}).encode("utf-8")
+            payload = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": {"name": "agent-tool-hub-test", "version": "1.0"}}}).encode("utf-8")
             req = urllib.request.Request(url, data=payload, method="POST")
             req.add_header("Content-Type", "application/json")
             req.add_header("Accept", "application/json, text/event-stream")
@@ -925,7 +881,7 @@ def detect_proxy_from_headers(headers):
         "summary": summary,
     }
 
-
+# Single source of truth for hub-path/config persistence.
 get_default_hub_path = hub_config_store.get_default_hub_path
 get_saved_hub_path = hub_config_store.get_saved_hub_path
 save_hub_path_pointer = hub_config_store.save_hub_path_pointer
@@ -976,7 +932,7 @@ AUDIT_SERVICE = AuditService()
 
 
 class SkillHubHandler(BaseHTTPRequestHandler):
-    """Tool Hub HTTP 请求处理器"""
+    """AgentToolHub HTTP 请求处理器"""
 
     def log_message(self, format, *args):
         """自定义日志格式"""
@@ -1072,8 +1028,6 @@ class SkillHubHandler(BaseHTTPRequestHandler):
         elif path == "/api/logs":
             batch_id = query.get("batch_id", [None])[0]
             self.handle_get_logs(batch_id)
-        elif path == "/api/user-info":
-            self.handle_get_user_info()
         elif path == "/api/network-info":
             self.handle_get_network_info()
         elif path == "/api/mcp":
@@ -1171,13 +1125,6 @@ class SkillHubHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
-    def handle_get_user_info(self):
-        """GET /api/user-info — 返回本机用户标识"""
-        import socket
-        username = Path.home().name
-        hostname = socket.gethostname().replace(".local", "")
-        self.send_json({"user": f"{username}@{hostname}"})
-
     def handle_get_network_info(self):
         """GET /api/network-info — 返回网络状态、代理检测结果"""
         import socket
@@ -1267,11 +1214,11 @@ class SkillHubHandler(BaseHTTPRequestHandler):
             "mcp_config_path": "检测到的 MCP 配置文件绝对路径；没有则省略或留空",
             "mcp_config_key": "检测到的 MCP 配置 key；没有则使用 mcpServers",
         }
-        prompt = f"""你现在需要把当前这个 Agent 接入 Tool Hub。
+        prompt = f"""你现在需要把当前这个 Agent 接入 AgentToolHub。
 
-请你自动检测当前 Agent 的本地配置，并将结果写入 Tool Hub。
+请你自动检测当前 Agent 的本地配置，并将结果写入 AgentToolHub。
 
-Tool Hub 信息：
+AgentToolHub 信息：
 - 服务地址：http://localhost:{PORT}
 - 配置文件：{config_path}
 - 已有 Agent：{json.dumps(agents, ensure_ascii=False)}
@@ -1307,13 +1254,13 @@ Tool Hub 信息：
    如果找不到 Skills，可以只接入 MCP。
    但至少需要找到其中一个，否则不要写入，并说明原因。
 
-6. 优先通过 Tool Hub API 写入：
+6. 优先通过 AgentToolHub API 写入：
    POST http://localhost:{PORT}/api/agents/upsert
 
    请求体必须使用以下结构：
 {json.dumps(schema, ensure_ascii=False, indent=2)}
 
-7. 如果 Tool Hub API 不可用，则直接修改配置文件：
+7. 如果 AgentToolHub API 不可用，则直接修改配置文件：
    {config_path}
 
    修改要求：
@@ -1429,7 +1376,7 @@ Tool Hub 信息：
             for d in normalize_skills_dirs(agent):
                 candidate = Path(d) / skill_id
                 if candidate.exists():
-                    real = candidate.resolve() if candidate.is_symlink() else candidate
+                    real = resolve_link_or_self(candidate)
                     return real
         # 扫描中央仓库
         hub_candidate = Path(config["hub_path"]) / skill_id
@@ -1610,8 +1557,8 @@ def _startup_network_check(port):
 
 
 def main():
-    """启动 Tool Hub 服务"""
-    print(f"🚀 Tool Hub Server 启动中...")
+    """启动 AgentToolHub 服务"""
+    print(f"🚀 AgentToolHub Server 启动中...")
     print(f"   端口: {PORT}")
     print(f"   地址: http://localhost:{PORT}")
 

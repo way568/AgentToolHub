@@ -12,7 +12,12 @@ except ImportError:  # pragma: no cover
 
 
 CONFIG_FILENAME = "tool-hub.json"
-HUB_PATH_POINTER = Path(__file__).resolve().parents[1] / ".hub-path"
+STATE_DIR = Path(
+    os.environ.get("AGENT_TOOL_HUB_STATE_DIR")
+    or os.environ.get("AGENT_TOOL_DOCK_STATE_DIR")
+    or Path.home() / ".agent-tool-hub"
+)
+HUB_PATH_POINTER = STATE_DIR / ".hub-path"
 
 
 def get_default_hub_path():
