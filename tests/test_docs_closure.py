@@ -18,10 +18,10 @@ class DocsClosureTests(unittest.TestCase):
         self.assertIn("Developer Compatibility Notes", readme)
         self.assertIn("tool_hub/data/", readme)
         self.assertIn("tool_hub_server.py", readme)
-        self.assertIn("QUICKSTART.md", readme)
+        self.assertIn("QUICKSTART.zh-CN.md", readme)
 
     def test_quickstart_covers_release_basics(self):
-        quickstart = Path("QUICKSTART.md").read_text(encoding="utf-8")
+        quickstart = Path("QUICKSTART.zh-CN.md").read_text(encoding="utf-8")
 
         self.assertIn("怎么解压即用", quickstart)
         self.assertIn("怎么初始化", quickstart)
@@ -32,27 +32,12 @@ class DocsClosureTests(unittest.TestCase):
         self.assertIn("skills gather", quickstart)
         self.assertIn("127.0.0.1", quickstart)
 
-    def test_handoff_reflects_current_package_and_remaining_work(self):
-        handoff = Path("HANDOFF.md").read_text(encoding="utf-8")
+    def test_local_handoff_notes_are_ignored(self):
+        gitignore = Path(".gitignore").read_text(encoding="utf-8")
 
-        self.assertIn("Phase 0~7", handoff)
-        self.assertIn("tool_hub/http_app.py", handoff)
-        self.assertIn("tool_hub/services/skills.py", handoff)
-        self.assertIn("tool_hub/services/audit.py", handoff)
-        self.assertIn("tool_hub/services/config.py", handoff)
-        self.assertIn("tool_hub/services/upload.py", handoff)
-        self.assertIn("pyproject.toml", handoff)
-        self.assertIn("AgentToolHub", handoff)
-        self.assertIn("agent-tool-hub", handoff)
-        self.assertIn("agent-tool-hub-web", handoff)
-        self.assertIn("agent-tool-dock", handoff)
-        self.assertIn("agent-tool-dock-web", handoff)
-        self.assertIn("tool-hub", handoff)
-        self.assertIn("tool-hub-web", handoff)
-        self.assertIn("python3 -m unittest discover -s tests -v", handoff)
-        self.assertIn("data/agent-presets/", handoff)
-        self.assertIn("README.md", handoff)
-        self.assertIn("发布", handoff)
+        self.assertIn("HANDOFF.md", gitignore)
+        self.assertIn("TEST_HANDOFF.md", gitignore)
+        self.assertIn("OPEN_SOURCE_NEXT_HANDOFF.md", gitignore)
 
 
 if __name__ == "__main__":

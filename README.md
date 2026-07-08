@@ -6,7 +6,7 @@ AgentToolHub helps you manage local AI agent capabilities without scattering Ski
 
 The Web UI gives you a local, auditable workflow: scan, gather, link, unlink, toggle, and test tools before exposing them to agents.
 
-Chinese quick start: see [`QUICKSTART.md`](QUICKSTART.md). Legacy Chinese project notes can be kept in `README.zh-CN.md` when needed.
+Chinese quick start: see [`QUICKSTART.zh-CN.md`](QUICKSTART.zh-CN.md). Legacy Chinese project notes can be kept in `README.zh-CN.md` when needed.
 
 ## Why
 
@@ -198,7 +198,7 @@ Current tests cover:
 - services: `ConfigService`, `UploadSkillService`, Skill, MCP, Audit
 - CLI flows: `agents list`, `mcp test --no-exec`, `skills gather`, `skills toggle`
 - HTTP flows: config, agents, skills upload
-- docs and packaging assertions: `README.md`, `HANDOFF.md`, `pyproject.toml`
+- docs and packaging assertions: `README.md`, `QUICKSTART.zh-CN.md`, `pyproject.toml`
 
 ## Developer Compatibility Notes
 

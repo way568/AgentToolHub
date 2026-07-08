@@ -1,12 +1,15 @@
 # macOS Finder metadata
 .DS_Store
 **/.DS_Store
-.gitignore 15.05.32
 
 # Local AgentToolHub state
 .hub-path
 .agent-tool-hub/
 .agent-tool-dock/
+
+# Local handoff notes
+HANDOFF.md
+TEST_HANDOFF.md
 OPEN_SOURCE_NEXT_HANDOFF.md
 
 # Python/runtime output
