@@ -47,6 +47,16 @@ tool-hub --help
 tool-hub-web --host 127.0.0.1 --port 8998 --no-browser
 ```
 
+## Screenshots
+
+### Skill Management
+
+![Skill Management](docs/images/skill-manage.jpg)
+
+### MCP Management
+
+![MCP Management](docs/images/mcp-manage.jpg)
+
 ## What It Manages
 
 - Built-in agent presets and MCP adapter rules.
