@@ -1,51 +1,23 @@
 # AgentToolHub
 
-Local-first control panel for AI agent tools, Skills, and MCP servers.
+Local-first Web control panel for AI agent tools, Skills, and MCP servers.
 
-AgentToolHub helps you manage local AI agent capabilities without scattering Skills and MCP server configs across multiple agent directories. It focuses on a local, auditable workflow: scan, gather, link, unlink, toggle, and test tools before exposing them to agents.
+AgentToolHub helps you manage local AI agent capabilities without scattering Skills and MCP server configs across multiple agent directories. The recommended way to use it is through the local Web UI. The CLI is mainly for advanced users, scripting, and debugging.
+
+The Web UI gives you a local, auditable workflow: scan, gather, link, unlink, toggle, and test tools before exposing them to agents.
 
 Chinese quick start: see [`QUICKSTART.md`](QUICKSTART.md). Legacy Chinese project notes can be kept in `README.zh-CN.md` when needed.
 
 ## Why
 
 - Manage local AI agent Skills and MCP servers in one place.
+- Use a Web UI instead of editing scattered config files by hand.
 - Link, unlink, gather, and audit local tools safely.
 - Run locally by default on `127.0.0.1`.
 
 ## Status
 
 AgentToolHub is currently packaged as a local developer utility. The public package and command names use `agent-tool-hub`. Internal Python imports still use `tool_hub` in v0.1.0 for compatibility.
-
-## Quick Start
-
-Install from the source tree:
-
-```bash
-pip install .
-agent-tool-hub --help
-agent-tool-hub-web --host 127.0.0.1 --port 8998 --no-browser
-```
-
-Common CLI commands:
-
-```bash
-agent-tool-hub doctor
-agent-tool-hub agents list
-agent-tool-hub mcp list
-agent-tool-hub mcp test --name playwright --no-exec
-agent-tool-hub skills gather --name demo --from /abs/path/demo --agent-id codex
-agent-tool-hub skills toggle --skill-id demo --agent-id cursor
-agent-tool-hub web
-```
-
-Legacy command aliases are kept for migration:
-
-```bash
-agent-tool-dock --help
-agent-tool-dock-web --host 127.0.0.1 --port 8998 --no-browser
-tool-hub --help
-tool-hub-web --host 127.0.0.1 --port 8998 --no-browser
-```
 
 ## Screenshots
 
@@ -56,6 +28,64 @@ tool-hub-web --host 127.0.0.1 --port 8998 --no-browser
 ### MCP Management
 
 ![MCP Management](docs/images/mcp-manage.jpg)
+
+## Web UI Quick Start
+
+Install from the source tree:
+
+```bash
+pip install .
+```
+
+Start the local Web UI:
+
+```bash
+agent-tool-hub-web --host 127.0.0.1 --port 8998
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8998
+```
+
+You can also start it from the CLI entry:
+
+```bash
+agent-tool-hub web
+```
+
+## What You Can Do in the Web UI
+
+- View configured agents, Skills, and MCP servers.
+- Gather local Skill directories into a central managed location.
+- Enable or disable Skills for different agents.
+- Add, edit, and test MCP server configs.
+- Inspect MCP tool lists before exposing them to agents.
+- Keep local config writes auditable and backed up.
+
+## Advanced CLI Usage
+
+The CLI is useful for scripting, debugging, and automation. Most users should start from the Web UI.
+
+```bash
+agent-tool-hub --help
+agent-tool-hub doctor
+agent-tool-hub agents list
+agent-tool-hub mcp list
+agent-tool-hub mcp test --name playwright --no-exec
+agent-tool-hub skills gather --name demo --from /abs/path/demo --agent-id codex
+agent-tool-hub skills toggle --skill-id demo --agent-id cursor
+```
+
+Legacy command aliases are kept for migration:
+
+```bash
+agent-tool-dock --help
+agent-tool-dock-web --host 127.0.0.1 --port 8998 --no-browser
+tool-hub --help
+tool-hub-web --host 127.0.0.1 --port 8998 --no-browser
+```
 
 ## What It Manages
 
