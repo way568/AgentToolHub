@@ -31,22 +31,41 @@ AgentToolHub is currently packaged as a local developer utility. The public pack
 
 ## Web UI Quick Start
 
-Install from the source tree:
+Fastest path on macOS:
+
+1. Download and unzip the project archive.
+2. Open the project folder.
+3. Double-click `run.command`.
+4. Open `http://127.0.0.1:8998` if the browser does not open automatically.
+
+If macOS does not allow double-click execution, run this once in the project folder:
 
 ```bash
-pip install .
+chmod +x run.command
 ```
 
-Start the local Web UI:
+Cross-platform source-tree start:
 
 ```bash
-agent-tool-hub-web --host 127.0.0.1 --port 8998
+python3 tool_hub_server.py
 ```
 
 Then open:
 
 ```text
 http://127.0.0.1:8998
+```
+
+Optional install from the source tree:
+
+```bash
+pip install .
+```
+
+After installation, start the local Web UI:
+
+```bash
+agent-tool-hub-web --host 127.0.0.1 --port 8998
 ```
 
 You can also start it from the CLI entry:
