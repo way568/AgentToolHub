@@ -31,9 +31,12 @@ def parse_agent_mcp_to_standard(name, raw_config, agent_id=None):
         if raw_config.get("env"):
             standard["env"] = raw_config["env"]
     elif "url" in raw_config:
-        raw_type = raw_config.get("type", "sse")
-        if raw_type == "sse" or "/sse" in raw_config.get("url", ""):
+        raw_type = raw_config.get("type")
+        url = raw_config.get("url", "")
+        if raw_type == "sse" or (raw_type is None and "/sse" in url):
             standard["type"] = "sse"
+        elif raw_type is None:
+            standard["type"] = "streamableHttp"
         else:
             standard["type"] = type_aliases.get(raw_type, raw_type)
         standard["url"] = raw_config["url"]
