@@ -41,6 +41,8 @@ textarea { resize: vertical; font-family: inherit; }
 .btn-outline { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); }
 .btn-outline:hover { border-color: var(--border-strong); color: var(--text); background:var(--surface3); }
 .btn-danger { background: var(--red); color: #fff; }
+.btn-danger-outline { background: transparent; border: 1px solid var(--red); color: var(--red); cursor: pointer; }
+.btn-danger-outline:hover { background: var(--red); color: #fff; }
 .btn-sm { min-height:28px; padding: 4px 10px; font-size: 12px; }
 
 .main { display: flex; height: calc(100vh - 61px); }
@@ -106,6 +108,8 @@ textarea { resize: vertical; font-family: inherit; }
 .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.32); display: flex; align-items: center; justify-content: center; z-index: 100; }
 .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
 .modal h2 { font-size: 18px; margin-bottom: 16px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.modal-header h2 { font-size: 18px; margin-bottom: 0; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; }
@@ -366,7 +370,10 @@ textarea { resize: vertical; font-family: inherit; }
 <!-- Agent 编辑弹窗 -->
 <div id="agent-modal" class="modal-overlay hidden">
   <div class="modal">
-    <h2 id="agent-modal-title">Add Agent</h2>
+    <div class="modal-header">
+      <h2 id="agent-modal-title">Add Agent</h2>
+      <button id="agent-delete-btn" class="btn-danger-outline btn-sm hidden" onclick="deleteAgent()" data-i18n="deleteAgent" data-i18n-title="deleteAgentHint" title="Remove this agent from Tool Hub config. Skills on disk are not affected.">Delete Agent</button>
+    </div>
     <input type="hidden" id="agent-edit-id">
     <div id="agent-onboarding-section" class="agent-onboarding-card">
       <h3 data-i18n="agentOnboardingTitle">Not sure how to configure it?</h3>
@@ -466,7 +473,7 @@ const I18N = {
     sourceAgentNotFound: '找不到来源 Agent', gatheredMcp: '已归聚 {name} 到 Hub', gatherFailed: '归聚失败: {error}', unknownError: '未知错误', cancelMcpChanges: '已取消所有 MCP 变更', savingMcpChanges: '正在保存 {count} 项 MCP 变更...', saveDoneWithErrors: '保存完成，{count} 项失败', savedMcpChanges: '已保存 {count} 项 MCP 变更。请重启 Agent 应用以生效。', mcpTestOk: '{name} 连通正常', mcpTestFail: '{name} 失败: {detail}', deleted: '已删除 {name}', addDone: '已添加', updateDone: '已更新',
     zipOnly: '只支持 .zip 文件', fileSelected: '已选择: {name} ({size} KB)', skillAdded: '{name} 已添加', skillUploadSuccess: 'Skill "{name}" 上传成功', uploadFailed: '上传失败', networkError: '网络错误: {message}',
     cancelChanges: '已取消所有变更', savingChanges: '正在保存 {count} 项变更...', savedChanges: '已保存 {count} 项变更。请重启 Agent 应用或新开对话以生效。', scanning: '正在扫描刷新...', scanAllGood: '一切正常，无需操作', gatheredNewSkills: '归聚了 {count} 个新 skill：{names}', rebuiltLinks: '补建了 {count} 个链接', brokenLinks: '发现 {count} 个断链', rebuiltLn: '补建了 {count} 个 ln', syncDone: '同步完成', noNewSkills: '没有发现新的 skill', newSkillFound: '发现 {count} 个新 skill，勾选确认归聚：', noSkillSelected: '未选择任何 skill', gatheredSkills: '成功归聚 {count} 个 skill',
-    addAgentTitle: '添加 Agent', editAgentTitle: '编辑 Agent', dirPlaceholder: '如: ~/.cursor/skills', onboardingPromptFailed: '生成接入 Prompt 失败', onboardingPromptCopied: '已复制自助接入 Prompt，请粘贴到目标 Agent 中执行', nameRequired: '请填写名称', skillsDirRequired: '请填写至少一个 Skills 目录路径', agentUpdated: 'Agent 已更新', agentAdded: 'Agent 已添加',
+    addAgentTitle: '添加 Agent', editAgentTitle: '编辑 Agent', dirPlaceholder: '如: ~/.cursor/skills', onboardingPromptFailed: '生成接入 Prompt 失败', onboardingPromptCopied: '已复制自助接入 Prompt，请粘贴到目标 Agent 中执行', nameRequired: '请填写名称', skillsDirRequired: '请填写至少一个 Skills 目录路径', agentUpdated: 'Agent 已更新', agentAdded: 'Agent 已添加', deleteAgent: '删除 Agent', deleteAgentHint: '从 Tool Hub 配置中移除该 Agent，不影响磁盘上的 skill 文件。', deleteAgentConfirm: '确定要从 Tool Hub 中删除 Agent "{name}" 吗？\n\n该操作只会从配置中移除 Agent 条目，不会删除磁盘上的 skill 文件。', agentDeleted: 'Agent "{name}" 已删除',
     batchUndo: '批量撤销', undo: '撤销', batchUndoConfirm: '确定要批量撤销这组操作吗？', undoConfirm: '确定要撤销这条操作吗？', batchUndoDone: '批量撤销成功', undoDone: '已撤销', deleteFailed: '删除失败',
     wukongMcpUnsupported: '悟空不支持自定义 MCP 外挂，无法通过 AgentToolHub 分发。', wukongMcpWarnTitle: '悟空不支持自定义 MCP 外挂', wukongSkillWarnTitle: '悟空安装 skill 需云端审核，本地挂载无效', wukongSkillTip: '悟空安装 skill 需要云端审核，本地 symlink 无效'
   },
@@ -492,7 +499,7 @@ const I18N = {
     sourceAgentNotFound: 'Source agent not found', gatheredMcp: 'Gathered {name} into Hub', gatherFailed: 'Gather failed: {error}', unknownError: 'Unknown error', cancelMcpChanges: 'Canceled all MCP changes', savingMcpChanges: 'Saving {count} MCP changes...', saveDoneWithErrors: 'Saved with {count} failures', savedMcpChanges: 'Saved {count} MCP changes. Restart agent apps to apply.', mcpTestOk: '{name} is reachable', mcpTestFail: '{name} failed: {detail}', deleted: 'Deleted {name}', addDone: 'Added', updateDone: 'Updated',
     zipOnly: 'Only .zip files are supported', fileSelected: 'Selected: {name} ({size} KB)', skillAdded: '{name} added', skillUploadSuccess: 'Skill "{name}" uploaded', uploadFailed: 'Upload failed', networkError: 'Network error: {message}',
     cancelChanges: 'Canceled all changes', savingChanges: 'Saving {count} changes...', savedChanges: 'Saved {count} changes. Restart agent apps or start a new chat to apply.', scanning: 'Scanning...', scanAllGood: 'Everything is OK. No action needed.', gatheredNewSkills: 'Gathered {count} new skills: {names}', rebuiltLinks: 'Rebuilt {count} links', brokenLinks: 'Found {count} broken links', rebuiltLn: 'Rebuilt {count} ln links', syncDone: 'Sync complete', noNewSkills: 'No new skills found', newSkillFound: 'Found {count} new skills. Select skills to gather:', noSkillSelected: 'No skill selected', gatheredSkills: 'Gathered {count} skills',
-    addAgentTitle: 'Add Agent', editAgentTitle: 'Edit Agent', dirPlaceholder: 'e.g. ~/.cursor/skills', onboardingPromptFailed: 'Failed to generate onboarding prompt', onboardingPromptCopied: 'Onboarding prompt copied. Paste it into the target agent.', nameRequired: 'Enter a name', skillsDirRequired: 'Enter at least one Skills directory path', agentUpdated: 'Agent updated', agentAdded: 'Agent added',
+    addAgentTitle: 'Add Agent', editAgentTitle: 'Edit Agent', dirPlaceholder: 'e.g. ~/.cursor/skills', onboardingPromptFailed: 'Failed to generate onboarding prompt', onboardingPromptCopied: 'Onboarding prompt copied. Paste it into the target agent.', nameRequired: 'Enter a name', skillsDirRequired: 'Enter at least one Skills directory path', agentUpdated: 'Agent updated', agentAdded: 'Agent added', deleteAgent: 'Delete Agent', deleteAgentHint: 'Remove this agent from Tool Hub config. Skills on disk are not affected.', deleteAgentConfirm: 'Are you sure you want to delete agent "{name}"?\n\nThis only removes the agent entry from the config. Skill files on disk are not affected.', agentDeleted: 'Agent "{name}" deleted',
     batchUndo: 'Undo batch', undo: 'Undo', batchUndoConfirm: 'Undo this batch?', undoConfirm: 'Undo this operation?', batchUndoDone: 'Batch undone', undoDone: 'Undone', deleteFailed: 'Delete failed',
     wukongMcpUnsupported: 'Wukong does not support custom MCP attachments, so AgentToolHub cannot distribute them.', wukongMcpWarnTitle: 'Wukong does not support custom MCP attachments', wukongSkillWarnTitle: 'Wukong skill installation requires cloud review. Local links do not work.', wukongSkillTip: 'Wukong skill installation requires cloud review. Local symlinks do not work.'
   }
@@ -1636,6 +1643,7 @@ function showAddAgent() {
   document.getElementById('agent-edit-id').value = '';
   document.getElementById('agent-name').value = '';
   document.getElementById('agent-onboarding-section').classList.remove('hidden');
+  document.getElementById('agent-delete-btn').classList.add('hidden');
   setDirRows(['']);
   document.getElementById('agent-mcp-path').value = '';
   document.getElementById('agent-mcp-key').value = 'mcpServers';
@@ -1648,6 +1656,7 @@ function showEditAgent(agentId) {
   document.getElementById('agent-modal-title').textContent = t('editAgentTitle');
   document.getElementById('agent-edit-id').value = agentId;
   document.getElementById('agent-onboarding-section').classList.add('hidden');
+  document.getElementById('agent-delete-btn').classList.remove('hidden');
   document.getElementById('agent-name').value = agent.name || '';
   const dirs = Array.isArray(agent.skills_dir) ? agent.skills_dir : [agent.skills_dir || ''];
   setDirRows(dirs.length ? dirs : ['']);
@@ -1708,6 +1717,24 @@ async function copyAgentOnboardingPrompt() {
 
 function closeAgentModal() {
   document.getElementById('agent-modal').classList.add('hidden');
+}
+
+async function deleteAgent() {
+  const editId = document.getElementById('agent-edit-id').value;
+  if (!editId) return;
+  const agent = agents.find(a => a.id === editId);
+  const agentName = agent ? agent.name : editId;
+  const msg = t('deleteAgentConfirm').replace('{name}', agentName);
+  if (!confirm(msg)) return;
+  const result = await api(`/agents/${encodeURIComponent(editId)}`, 'DELETE');
+  if (result && result.error) { toast(result.error, 'error'); return; }
+  closeAgentModal();
+  toast(t('agentDeleted').replace('{name}', agentName));
+  await Promise.all([loadSkills(), loadAgents()]);
+  config = await api('/config');
+  buildSourceDropdown();
+  renderAgentList();
+  renderMatrix();
 }
 
 async function saveAgent() {
