@@ -1561,16 +1561,23 @@ async function doScanSync() {
   const brokenLinks = result.broken_links || 0;
 
   // 自动归聚所有新发现的 skill
+  let gatheredNames = [];
   if (newSkills.length > 0) {
     const gatherResult = await api('/gather', 'POST', { skills: newSkills });
     if (gatherResult && gatherResult.error) { toast(gatherResult.error, 'error'); }
+    else {
+      const items = gatherResult.results || [];
+      gatheredNames = items.filter(r => r.status === 'ok').map(r => r.name);
+      const failed = items.filter(r => r.status !== 'ok');
+      if (failed.length) toast(t('gatherFailed', { error: failed.map(f => `${f.name}: ${f.message}`).join('; ') }), 'error');
+    }
   }
 
   // 汇总提示后刷新页面
   const msgs = [];
-  if (newSkills.length > 0) {
-    const names = newSkills.map(s => s.name || s.id).join(getUiLang() === 'en-US' ? ', ' : '、');
-    msgs.push(t('gatheredNewSkills', { count: newSkills.length, names }));
+  if (gatheredNames.length > 0) {
+    const names = gatheredNames.join(getUiLang() === 'en-US' ? ', ' : '、');
+    msgs.push(t('gatheredNewSkills', { count: gatheredNames.length, names }));
   }
   if (linksCreated > 0) msgs.push(t('rebuiltLinks', { count: linksCreated }));
   if (brokenLinks > 0) msgs.push(t('brokenLinks', { count: brokenLinks }));
@@ -1628,7 +1635,12 @@ async function doGather() {
   const result = await api('/gather', 'POST', { skills: selected });
   closeScanModal();
   if (result.error) { toast(result.error, 'error'); return; }
-  toast(t('gatheredSkills', { count: selected.length }));
+  const items = result.results || [];
+  const failed = items.filter(r => r.status !== 'ok');
+  const okCount = items.filter(r => r.status === 'ok').length;
+  if (failed.length) toast(t('gatherFailed', { error: failed.map(f => `${f.name}: ${f.message}`).join('; ') }), 'error');
+  if (okCount > 0) toast(t('gatheredSkills', { count: okCount }));
+  if (okCount === 0) return;
   await Promise.all([loadSkills(), loadAgents()]);
   config = await api('/config');
   buildSourceDropdown();

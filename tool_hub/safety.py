@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-VALID_SLUG_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+VALID_SLUG_RE = re.compile(r"^[\w.-]+$")
 
 
 def validate_slug(value, label="标识", error_cls=ValueError):

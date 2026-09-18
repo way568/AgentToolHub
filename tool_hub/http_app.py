@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from fnmatch import fnmatch
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 from uuid import uuid4
 
 from tool_hub import audit as hub_audit
@@ -1037,7 +1037,7 @@ class SkillHubHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        path = parsed.path.rstrip("/")
+        path = unquote(parsed.path.rstrip("/"))
 
         if path == "/api/choose-folder":
             self.handle_choose_folder()
@@ -1081,7 +1081,7 @@ class SkillHubHandler(BaseHTTPRequestHandler):
 
     def do_PUT(self):
         parsed = urlparse(self.path)
-        path = parsed.path.rstrip("/")
+        path = unquote(parsed.path.rstrip("/"))
 
         if path == "/api/config":
             self.handle_put_config()
@@ -1096,7 +1096,7 @@ class SkillHubHandler(BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         parsed = urlparse(self.path)
-        path = parsed.path.rstrip("/")
+        path = unquote(parsed.path.rstrip("/"))
 
         if re.match(r"^/api/agents/[^/]+$", path):
             agent_id = path.split("/")[3]

@@ -400,8 +400,8 @@ class SkillService:
         results = []
 
         for item in skill_list:
-            skill_name = item.get("name", "")
-            from_path = item.get("from", "")
+            skill_name = item.get("id") or item.get("name", "")
+            from_path = item.get("from") or item.get("path", "")
             agent_id = str(item.get("agent_id", "")).strip()
             if not skill_name or not from_path:
                 results.append({"name": skill_name, "status": "error", "message": "缺少 name 或 from"})
