@@ -7,6 +7,9 @@
 .agent-tool-hub/
 .agent-tool-dock/
 
+# Codegraph index
+.codegraph/
+
 # Local handoff notes
 HANDOFF.md
 TEST_HANDOFF.md
