@@ -4,6 +4,8 @@ import shutil
 import subprocess
 import urllib.request
 
+from tool_hub.mcp.adapters import normalize_mcp_type
+
 
 def _normalize_tools(tools):
     if not isinstance(tools, list):
@@ -42,7 +44,7 @@ def _tools_from_http_body(body):
 
 
 def fetch_mcp_tools(mcp_data):
-    mcp_type = mcp_data.get("type", "stdio")
+    mcp_type = normalize_mcp_type(mcp_data.get("type", "stdio"))
     try:
         if mcp_type == "stdio":
             cmd = mcp_data.get("command", "")
@@ -138,7 +140,7 @@ def fetch_mcp_tools_description(mcp_data):
 
 
 def test_mcp_connectivity(mcp_data):
-    mcp_type = mcp_data.get("type", "stdio")
+    mcp_type = normalize_mcp_type(mcp_data.get("type", "stdio"))
     if mcp_type == "stdio":
         command = mcp_data.get("command", "")
         found = shutil.which(command) is not None

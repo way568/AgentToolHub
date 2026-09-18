@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 
 class Phase5RegistryTests(unittest.TestCase):
@@ -58,6 +59,35 @@ class Phase5RegistryTests(unittest.TestCase):
         )
 
         self.assertEqual(parsed["headers"]["Authorization"], "Bearer token")
+
+    def test_http_transport_aliases_normalize_to_streamable_http(self):
+        from tool_hub.mcp.adapters import parse_agent_mcp_to_standard
+
+        for raw_type in ["http", "streamable-http", "streamableHttp"]:
+            with self.subTest(raw_type=raw_type):
+                parsed = parse_agent_mcp_to_standard(
+                    "remote-http",
+                    {"type": raw_type, "url": "https://example.com/mcp"},
+                )
+                self.assertEqual(parsed["type"], "streamableHttp")
+
+    def test_runtime_treats_streamable_http_as_post_transport(self):
+        from tool_hub.mcp.runtime import test_mcp_connectivity
+
+        response = MagicMock()
+        response.status = 200
+        response.__enter__.return_value = response
+        opener = MagicMock()
+        opener.open.return_value = response
+
+        with patch("tool_hub.mcp.runtime.urllib.request.build_opener", return_value=opener):
+            result = test_mcp_connectivity(
+                {"type": "streamable-http", "url": "https://example.com/mcp"}
+            )
+
+        request = opener.open.call_args.args[0]
+        self.assertEqual(request.get_method(), "POST")
+        self.assertEqual(result, {"status": "ok", "detail": "HTTP 200"})
 
 
 if __name__ == "__main__":

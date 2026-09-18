@@ -8,7 +8,8 @@
     "~/Library/Application Support/Qoder/SharedClientCache/mcp.json",
     "~/Library/Application Support/Qoder/mcp.json",
     "~/.config/Qoder/mcp.json",
-    "~/AppData/Roaming/Qoder/mcp.json"
+    "~/AppData/Roaming/Qoder/mcp.json",
+    "~/.qoder/settings.json"
   ],
   "mcp_config_key": "mcpServers"
 }

@@ -1,0 +1,23 @@
+{
+  "agent_id": "qodercli",
+  "config_path": "~/.qoder/settings.json",
+  "config_key": "mcpServers",
+  "supported_types": ["stdio", "sse", "streamableHttp"],
+  "write_mapping": {
+    "stdio": {
+      "required_fields": ["command", "args"],
+      "optional_fields": ["env"],
+      "transform": "no_type_field"
+    },
+    "sse": {
+      "required_fields": ["type", "url"],
+      "optional_fields": ["headers"],
+      "type_field_value": "sse"
+    },
+    "streamableHttp": {
+      "required_fields": ["type", "url"],
+      "optional_fields": ["headers"],
+      "type_field_value": "streamable-http"
+    }
+  }
+}

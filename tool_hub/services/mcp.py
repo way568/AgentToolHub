@@ -6,7 +6,7 @@ from uuid import uuid4
 from tool_hub.audit import append_log
 from tool_hub.config_store import get_default_hub_path
 from tool_hub.errors import ToolHubError
-from tool_hub.mcp.adapters import adapt_mcp_for_agent, parse_agent_mcp_to_standard
+from tool_hub.mcp.adapters import adapt_mcp_for_agent, normalize_mcp_type, parse_agent_mcp_to_standard
 from tool_hub.mcp.agent_config import (
     read_agent_mcp_config,
     remove_agent_mcp_entry,
@@ -32,7 +32,7 @@ class McpService:
             for name, raw_cfg in agent_mcps.items():
                 if name in managed_names:
                     continue
-                standard = parse_agent_mcp_to_standard(name, raw_cfg, agent_id=agent["id"])
+                standard = parse_agent_mcp_to_standard(name, raw_cfg, agent_id=agent)
                 if not standard:
                     continue
                 if name in unmanaged_map:
@@ -71,7 +71,7 @@ class McpService:
         raw_cfg = agent_mcps.get(name)
         if raw_cfg is None:
             raise ToolHubError(f"MCP '{name}' 在 Agent '{source_agent_id}' 中不存在", status=404)
-        standard = parse_agent_mcp_to_standard(name, raw_cfg, agent_id=source_agent["id"])
+        standard = parse_agent_mcp_to_standard(name, raw_cfg, agent_id=source_agent)
         if not standard:
             raise ToolHubError("无法解析该 MCP 配置")
         standard["created_at"] = datetime.now(timezone.utc).isoformat()
@@ -102,13 +102,13 @@ class McpService:
             for mcp_data in mcps:
                 for agent in config.get("agents", []):
                     if agent["id"] in target_agents:
-                        adapted = adapt_mcp_for_agent(mcp_data, agent["id"])
+                        adapted = adapt_mcp_for_agent(mcp_data, agent)
                         write_agent_mcp_entry(agent, mcp_data["name"], adapted)
             return {"success": True, "mcp": mcps[0] if mcps else None, "mcps": mcps}
 
         mcp_data = {
             "name": body.get("name", "").strip(),
-            "type": body.get("type", "stdio"),
+            "type": normalize_mcp_type(body.get("type", "stdio")),
             "description": body.get("description", ""),
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
@@ -127,7 +127,7 @@ class McpService:
         target_agents = body.get("target_agents", [])
         for agent in config.get("agents", []):
             if agent["id"] in target_agents:
-                adapted = adapt_mcp_for_agent(mcp_data, agent["id"])
+                adapted = adapt_mcp_for_agent(mcp_data, agent)
                 write_agent_mcp_entry(agent, mcp_data["name"], adapted)
         return {"success": True, "mcp": mcp_data}
 
@@ -155,7 +155,7 @@ class McpService:
 
         for key in ["type", "description", "command", "args", "env", "url", "headers"]:
             if key in body:
-                mcp_data[key] = body[key]
+                mcp_data[key] = normalize_mcp_type(body[key]) if key == "type" else body[key]
         save_mcp(hub_path, mcp_data)
         return {"success": True, "mcp": mcp_data}
 
@@ -251,7 +251,7 @@ class McpService:
                 raise ToolHubError(f"MCP '{mcp_name}' 不存在", status=404)
             with open(filepath, "r", encoding="utf-8") as fp:
                 mcp_data = json.load(fp)
-            adapted = adapt_mcp_for_agent(mcp_data, agent_id)
+            adapted = adapt_mcp_for_agent(mcp_data, agent)
             write_agent_mcp_entry(agent, mcp_name, adapted)
         else:
             remove_agent_mcp_entry(agent, mcp_name)

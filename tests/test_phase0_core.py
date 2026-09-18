@@ -72,6 +72,58 @@ class Phase0CoreTests(unittest.TestCase):
         self.assertEqual(result["http_headers"], {"Authorization": "Bearer token"})
         self.assertNotIn("headers", result)
 
+    def test_qodercli_adapter_maps_streamable_http_and_preserves_headers(self):
+        from tool_hub.mcp.adapters import adapt_mcp_for_agent
+
+        result = adapt_mcp_for_agent(
+            {
+                "name": "remote-http",
+                "type": "streamableHttp",
+                "url": "https://example.com/mcp",
+                "headers": {"Authorization": "Bearer token"},
+            },
+            {
+                "id": "qoder",
+                "mcp_config_path": "/tmp/project/.qoder/settings.json",
+            },
+        )
+
+        self.assertEqual(result["type"], "streamable-http")
+        self.assertEqual(result["url"], "https://example.com/mcp")
+        self.assertEqual(result["headers"], {"Authorization": "Bearer token"})
+
+    def test_qoder_ide_keeps_streamable_http_camel_case(self):
+        from tool_hub.mcp.adapters import adapt_mcp_for_agent
+
+        result = adapt_mcp_for_agent(
+            {
+                "name": "remote-http",
+                "type": "streamableHttp",
+                "url": "https://example.com/mcp",
+            },
+            {
+                "id": "qoder",
+                "mcp_config_path": "/tmp/Library/Application Support/Qoder/SharedClientCache/mcp.json",
+            },
+        )
+
+        self.assertEqual(result["type"], "streamableHttp")
+
+    def test_detect_agents_finds_qodercli_settings(self):
+        from tool_hub import presets
+
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            (home / ".qoder" / "skills").mkdir(parents=True)
+            (home / ".qoder" / "settings.json").write_text("{}", encoding="utf-8")
+
+            with patch.object(presets, "_home", return_value=home):
+                agents = presets.detect_agents()
+
+        qoder = next((agent for agent in agents if agent["id"] == "qoder"), None)
+        self.assertIsNotNone(qoder)
+        self.assertEqual(qoder["mcp_config_path"], str(home / ".qoder" / "settings.json"))
+
     def test_save_delete_mcp_rejects_invalid_name(self):
         from tool_hub.mcp.store import delete_mcp, save_mcp
 

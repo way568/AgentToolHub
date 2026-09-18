@@ -3,6 +3,32 @@ from pathlib import Path
 
 
 MCP_ADAPTERS_DIR = Path(__file__).resolve().parents[1] / "data" / "mcp-adapters"
+DEFAULT_TYPE_ALIASES = {
+    "http": "streamableHttp",
+    "streamable-http": "streamableHttp",
+    "streamableHttp": "streamableHttp",
+    "sse": "sse",
+    "stdio": "stdio",
+}
+
+
+def normalize_mcp_type(mcp_type):
+    return DEFAULT_TYPE_ALIASES.get(mcp_type, mcp_type)
+
+
+def resolve_mcp_adapter_id(agent):
+    if isinstance(agent, str):
+        return agent
+    if not isinstance(agent, dict):
+        return ""
+    if agent.get("id") == "qoder":
+        raw_paths = agent.get("mcp_config_path", "")
+        paths = raw_paths if isinstance(raw_paths, list) else [raw_paths]
+        for path in paths:
+            parts = Path(path).expanduser().parts if path else ()
+            if len(parts) >= 2 and parts[-2:] == (".qoder", "settings.json"):
+                return "qodercli"
+    return agent.get("id", "")
 
 
 def load_adapter(agent_id):
@@ -16,13 +42,12 @@ def load_adapter(agent_id):
 def parse_agent_mcp_to_standard(name, raw_config, agent_id=None):
     if not isinstance(raw_config, dict):
         return None
-    adapter = load_adapter(agent_id) if agent_id else None
+    adapter_id = resolve_mcp_adapter_id(agent_id)
+    adapter = load_adapter(adapter_id) if adapter_id else None
     read_mapping = adapter.get("read_mapping", {}) if adapter else {}
     headers_fields = read_mapping.get("headers_fields", ["headers", "http_headers"])
-    type_aliases = read_mapping.get(
-        "type_aliases",
-        {"http": "streamableHttp", "streamableHttp": "streamableHttp", "sse": "sse"},
-    )
+    type_aliases = dict(DEFAULT_TYPE_ALIASES)
+    type_aliases.update(read_mapping.get("type_aliases", {}))
     standard = {"name": name, "description": raw_config.get("description", "")}
     if "command" in raw_config:
         standard["type"] = "stdio"
@@ -50,7 +75,7 @@ def parse_agent_mcp_to_standard(name, raw_config, agent_id=None):
 
 
 def build_raw_config(mcp_data):
-    mcp_type = mcp_data.get("type", "stdio")
+    mcp_type = normalize_mcp_type(mcp_data.get("type", "stdio"))
     result = {}
     if mcp_type == "stdio":
         result["command"] = mcp_data.get("command", "")
@@ -66,8 +91,8 @@ def build_raw_config(mcp_data):
 
 
 def adapt_mcp_for_agent(mcp_data, agent_id):
-    adapter = load_adapter(agent_id)
-    mcp_type = mcp_data.get("type", "stdio")
+    adapter = load_adapter(resolve_mcp_adapter_id(agent_id))
+    mcp_type = normalize_mcp_type(mcp_data.get("type", "stdio"))
     if adapter is None:
         return build_raw_config(mcp_data)
     mapping_root = adapter.get("write_mapping") or adapter.get("type_mapping", {})

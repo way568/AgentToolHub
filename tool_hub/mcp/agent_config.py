@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from tool_hub.backends.registry import get_backend_for_agent
-from tool_hub.mcp.adapters import load_adapter
+from tool_hub.mcp.adapters import load_adapter, resolve_mcp_adapter_id
 
 
 def get_mcp_config_paths(agent):
@@ -16,7 +16,7 @@ def get_mcp_config_paths(agent):
 
 def read_agent_mcp_config(agent):
     config_key = agent.get("mcp_config_key", "mcpServers")
-    adapter = load_adapter(agent.get("id", ""))
+    adapter = load_adapter(resolve_mcp_adapter_id(agent))
     format_name = adapter.get("config_format") if adapter else None
     backend = get_backend_for_agent(agent, format_name=format_name)
     merged = {}
@@ -34,7 +34,7 @@ def read_agent_mcp_config(agent):
 
 def write_agent_mcp_entry(agent, mcp_name, mcp_config):
     config_key = agent.get("mcp_config_key", "mcpServers")
-    adapter = load_adapter(agent.get("id", ""))
+    adapter = load_adapter(resolve_mcp_adapter_id(agent))
     format_name = adapter.get("config_format") if adapter else None
     backend = get_backend_for_agent(agent, format_name=format_name)
     for config_path in get_mcp_config_paths(agent):
@@ -47,7 +47,7 @@ def write_agent_mcp_entry(agent, mcp_name, mcp_config):
 
 def remove_agent_mcp_entry(agent, mcp_name):
     config_key = agent.get("mcp_config_key", "mcpServers")
-    adapter = load_adapter(agent.get("id", ""))
+    adapter = load_adapter(resolve_mcp_adapter_id(agent))
     format_name = adapter.get("config_format") if adapter else None
     backend = get_backend_for_agent(agent, format_name=format_name)
     removed = False

@@ -83,6 +83,49 @@ class Phase2ServiceTests(unittest.TestCase):
             codex_mcps = read_agent_mcp_config(config["agents"][0])
             self.assertEqual(codex_mcps["playwright"]["http_headers"]["Authorization"], "Bearer token")
 
+    def test_mcp_service_exports_qodercli_transport_for_existing_qoder_agent(self):
+        from tool_hub.mcp.agent_config import read_agent_mcp_config
+        from tool_hub.mcp.store import load_all_mcp
+        from tool_hub.services.mcp import McpService
+
+        with tempfile.TemporaryDirectory() as tmp:
+            hub_path = Path(tmp) / "hub"
+            qoder_config = Path(tmp) / ".qoder" / "settings.json"
+            qoder_config.parent.mkdir(parents=True)
+            qoder_config.write_text(
+                json.dumps({"theme": "dark", "mcpServers": {"local": {"command": "demo"}}}),
+                encoding="utf-8",
+            )
+            agent = {
+                "id": "qoder",
+                "name": "Qoder",
+                "skills_dir": [],
+                "mcp_config_path": str(qoder_config),
+                "mcp_config_key": "mcpServers",
+            }
+            config = {"hub_path": str(hub_path), "agents": [agent]}
+
+            result = McpService().add_mcp(
+                config,
+                {
+                    "name": "remote-http",
+                    "type": "streamable-http",
+                    "url": "https://example.com/mcp",
+                    "headers": {"Authorization": "Bearer token"},
+                    "target_agents": ["qoder"],
+                },
+            )
+
+            self.assertTrue(result["success"])
+            stored = load_all_mcp(str(hub_path))[0]
+            self.assertEqual(stored["type"], "streamableHttp")
+            qoder_mcps = read_agent_mcp_config(agent)
+            self.assertEqual(qoder_mcps["remote-http"]["type"], "streamable-http")
+            self.assertEqual(qoder_mcps["remote-http"]["headers"], {"Authorization": "Bearer token"})
+            raw = json.loads(qoder_config.read_text(encoding="utf-8"))
+            self.assertEqual(raw["theme"], "dark")
+            self.assertIn("local", raw["mcpServers"])
+
     def test_mcp_service_lists_managed_and_agent_status(self):
         from tool_hub.mcp.store import save_mcp
         from tool_hub.services.mcp import McpService
