@@ -7,10 +7,11 @@ import re
 import shutil
 import subprocess
 import ast
+import sys
 import webbrowser
 from datetime import datetime, timezone
 from fnmatch import fnmatch
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs, unquote
 from uuid import uuid4
@@ -943,25 +944,29 @@ class SkillHubHandler(BaseHTTPRequestHandler):
         return detect_proxy_from_headers(self.headers)
 
     def send_json(self, data, status=200):
-        """发送 JSON 响应"""
+        """发送 JSON 响应；客户端已断开时静默放弃写入"""
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        allowed_origin = allow_cors_origin(
-            self.headers.get("Origin"),
-            self.server.server_address[0],
-            self.server.server_address[1],
-        )
-        if allowed_origin:
-            self.send_header("Access-Control-Allow-Origin", allowed_origin)
-        # 代理告警头
-        proxy_info = self._detect_proxy()
-        if proxy_info["detected"]:
-            self.send_header("X-Tool-Hub-Proxy-Warning", "proxy-detected")
-            self.send_header("X-Tool-Hub-Proxy-Headers", ", ".join(proxy_info["headers"].keys()))
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            allowed_origin = allow_cors_origin(
+                self.headers.get("Origin"),
+                self.server.server_address[0],
+                self.server.server_address[1],
+            )
+            if allowed_origin:
+                self.send_header("Access-Control-Allow-Origin", allowed_origin)
+            # 代理告警头
+            proxy_info = self._detect_proxy()
+            if proxy_info["detected"]:
+                self.send_header("X-Tool-Hub-Proxy-Warning", "proxy-detected")
+                self.send_header("X-Tool-Hub-Proxy-Headers", ", ".join(proxy_info["headers"].keys()))
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            # 浏览器刷新、关闭页面或取消请求时会提前断开，响应已无处可发
+            self.close_connection = True
 
     def send_error_json(self, message, status=400):
         """发送错误 JSON 响应"""
@@ -1495,6 +1500,18 @@ AgentToolHub 信息：
             self.send_json(result)
 
 
+class SkillHubHTTPServer(ThreadingHTTPServer):
+    """并发处理请求；客户端提前断开属于正常情况，不打印 traceback"""
+
+    daemon_threads = True
+
+    def handle_error(self, request, client_address):
+        exc_type = sys.exc_info()[0]
+        if exc_type is not None and issubclass(exc_type, (BrokenPipeError, ConnectionResetError)):
+            return
+        super().handle_error(request, client_address)
+
+
 # ============================================================
 # 启动入口
 # ============================================================
@@ -1597,7 +1614,7 @@ def main():
         print(f"   ⚠️ 启动迁移失败（不影响服务）: {e}")
     print()
 
-    server = HTTPServer(("127.0.0.1", PORT), SkillHubHandler)
+    server = SkillHubHTTPServer(("127.0.0.1", PORT), SkillHubHandler)
 
     # 自动打开浏览器
     webbrowser.open(f"http://localhost:{PORT}")

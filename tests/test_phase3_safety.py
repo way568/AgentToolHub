@@ -114,7 +114,7 @@ class Phase3SafetyTests(unittest.TestCase):
 
         with patch("tool_hub.http_app._startup_network_check", return_value={"port_available": True, "port_error": None, "active_proxies": {}}), patch(
             "tool_hub.http_app.load_config", return_value=None
-        ), patch("tool_hub.http_app.HTTPServer", return_value=fake_server) as server_ctor, patch(
+        ), patch("tool_hub.http_app.SkillHubHTTPServer", return_value=fake_server) as server_ctor, patch(
             "tool_hub.http_app.webbrowser.open"
         ):
             http_app.main()

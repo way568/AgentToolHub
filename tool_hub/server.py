@@ -1,8 +1,7 @@
 import argparse
 import webbrowser
-from http.server import HTTPServer
 
-from tool_hub.http_app import PORT, SkillHubHandler, _startup_network_check, load_config, migrate_config_with_presets, save_config
+from tool_hub.http_app import PORT, SkillHubHandler, SkillHubHTTPServer, _startup_network_check, load_config, migrate_config_with_presets, save_config
 
 
 def start_web_server(host="127.0.0.1", port=PORT, open_browser=True):
@@ -17,7 +16,7 @@ def start_web_server(host="127.0.0.1", port=PORT, open_browser=True):
     except Exception:
         pass
 
-    server = HTTPServer((host, port), SkillHubHandler)
+    server = SkillHubHTTPServer((host, port), SkillHubHandler)
     if open_browser:
         webbrowser.open(f"http://{host}:{port}")
     try:

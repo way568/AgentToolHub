@@ -1,10 +1,31 @@
 import json
 import os
+import queue
 import shutil
 import subprocess
+import threading
 import urllib.request
 
 from tool_hub.mcp.adapters import normalize_mcp_type
+
+STDIO_IO_TIMEOUT = 15  # 秒；单次 stdio 读取的最长等待时间
+
+
+def _readline_with_timeout(stream, timeout):
+    """从管道读取一行；超时返回 None，避免子进程无响应时永久阻塞"""
+    result = queue.Queue(maxsize=1)
+
+    def _reader():
+        try:
+            result.put(stream.readline())
+        except Exception:
+            result.put(b"")
+
+    threading.Thread(target=_reader, daemon=True).start()
+    try:
+        return result.get(timeout=timeout)
+    except queue.Empty:
+        return None
 
 
 def _normalize_tools(tools):
@@ -73,7 +94,7 @@ def fetch_mcp_tools(mcp_data):
                 ) + "\n"
                 proc.stdin.write(init_req.encode())
                 proc.stdin.flush()
-                init_resp_line = proc.stdout.readline()
+                init_resp_line = _readline_with_timeout(proc.stdout, STDIO_IO_TIMEOUT)
                 if not init_resp_line:
                     return []
                 notif = json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"}) + "\n"
@@ -82,7 +103,7 @@ def fetch_mcp_tools(mcp_data):
                 tools_req = json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}) + "\n"
                 proc.stdin.write(tools_req.encode())
                 proc.stdin.flush()
-                tools_resp_line = proc.stdout.readline()
+                tools_resp_line = _readline_with_timeout(proc.stdout, STDIO_IO_TIMEOUT)
                 if not tools_resp_line:
                     return []
                 return _tools_from_response_payload(json.loads(tools_resp_line))
