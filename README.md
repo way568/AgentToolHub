@@ -2,11 +2,11 @@
 
 Local-first Web control panel for AI agent tools, Skills, and MCP servers.
 
+**English** · [简体中文](./README.zh-CN.md) · [中文快速上手](./QUICKSTART.zh-CN.md)
+
 AgentToolHub helps you manage local AI agent capabilities without scattering Skills and MCP server configs across multiple agent directories. The recommended way to use it is through the local Web UI. The CLI is mainly for advanced users, scripting, and debugging.
 
 The Web UI gives you a local, auditable workflow: scan, gather, link, unlink, toggle, and test tools before exposing them to agents.
-
-Chinese quick start: see [`QUICKSTART.zh-CN.md`](QUICKSTART.zh-CN.md). Legacy Chinese project notes can be kept in `README.zh-CN.md` when needed.
 
 ## Why
 

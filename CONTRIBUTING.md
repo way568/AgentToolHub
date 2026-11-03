@@ -38,6 +38,7 @@ Before opening a pull request:
 - Do not weaken slug or path validation.
 - Do not remove config backups before writes.
 - Document any change that reads or writes local files.
+- Keep `README.md` (English) and `README.zh-CN.md` (简体中文) in sync — content changes go to both, and the language switcher lines must mirror each other.
 - Avoid adding heavyweight frontend build dependencies unless necessary.
 
 ## Compatibility Notes
